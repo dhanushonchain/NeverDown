@@ -17,6 +17,7 @@
     "arkiv:seed": "node scripts/run-with-env.mjs arkiv-seed scripts/seed-arkiv.ts",
     "arkiv:query": "node scripts/run-with-env.mjs agent scripts/query-arkiv.ts",
     "ens:check": "node scripts/run-with-env.mjs agent scripts/check-ens.ts",
+    "sdk:smoke": "node scripts/run-with-env.mjs agent scripts/sdk-smoke.mts",
     "ens:set-texts": "node scripts/run-with-env.mjs ens-set-texts scripts/set-ens-texts.ts",
     "preflight:live": "node scripts/run-with-env.mjs agent scripts/live-preflight.ts",
     "seller:live": "node scripts/run-with-env.mjs seller apps/sellers/src/server.ts",

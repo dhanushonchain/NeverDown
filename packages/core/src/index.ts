@@ -12,6 +12,8 @@ export type { ProofOfCapabilityInput, ProofOfCapabilityResult } from "./poc/inde
 
 export { discoverOffers, filterOffers } from "./arkiv/discover.js";
 export type { DiscoverOffersInput } from "./arkiv/discover.js";
+export { loadArkivReadConfig } from "./arkiv/config.js";
+export type { CapabilityOfferRow } from "./arkiv/schema.js";
 
 export { normalizeEndpoint } from "./policy/endpoint.js";
 export { hashCanonical, canonicalize } from "./hcs/evidence.js";

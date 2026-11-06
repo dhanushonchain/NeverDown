@@ -18,4 +18,7 @@ export type {
   PurchaseRequest,
   PaymentWorkerHandle,
   PolicyConfig,
+  CapabilityOfferRow,
 } from "@neverdown/core";
+export { NeverDown } from "./client.js";
+export type { NeverDownOptions } from "./client.js";
