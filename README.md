@@ -31,7 +31,7 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 | **[docs/C7-POC.md](docs/C7-POC.md)** | C7 Proof-of-Capability before install |
 | **[docs/C8-AGENT.md](docs/C8-AGENT.md)** | C8 Supreme Agent procure / deny CLI |
 | **[docs/neverdown-architecture.md](docs/neverdown-architecture.md)** | Planes, components, flows, security honesty |
-| **[docs/SDK.md](docs/SDK.md)** | Phased `@neverdown/sdk` plan (Node facade over core) |
+| **[docs/SDK.md](docs/SDK.md)** | Implemented `@neverdown/sdk` phases and package status |
 | **[docs/neverdown-architecture.excalidraw](docs/neverdown-architecture.excalidraw)** | Editable architecture diagram |
 
 ---

@@ -1,9 +1,13 @@
 {
   "name": "@neverdown/sdk",
-  "private": true,
   "version": "0.1.0",
   "description": "Server-side NeverDown resilience operator client",
   "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/dhanushonchain/NeverDown.git", "directory": "packages/sdk" },
+  "engines": { "node": ">=22.13.0" },
+  "files": ["dist", "README.md"],
+  "publishConfig": { "access": "public" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -22,7 +26,7 @@
     "test": "node --import tsx --test \"test/**/*.test.ts\""
   },
   "dependencies": {
-    "@neverdown/core": "workspace:*"
+    "@neverdown/core": "workspace:^"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

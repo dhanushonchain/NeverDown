@@ -74,7 +74,7 @@ Failure spot unhealthy
 - Publish real ENS text records on `neverdownseller.eth` / `neverdown.eth` (disable `ENS_ALLOW_TEXT_OVERLAY`) — [ENS-SETUP.md](./ENS-SETUP.md)
 - Record ≤5 min video from [DEMO-SCRIPT.md](./DEMO-SCRIPT.md) / [VIDEO-CHECKLIST.md](./VIDEO-CHECKLIST.md)
 - Keep live evidence current: [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md)
-- SDK (phased, internal Node facade): [SDK.md](./SDK.md) — start at S0, do not one-shot S0–S4
+- SDK (Node facade with worker-backed RPC procurement and dApp failure monitor): [SDK.md](./SDK.md) · [package README](../packages/sdk/README.md)
 
 ---
 

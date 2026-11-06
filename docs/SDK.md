@@ -1,5 +1,7 @@
 # NeverDown SDK — phased plan
 
+**Implementation status (2026-11-07):** S0–S3 and S4 packaging are implemented in separate commits. `@neverdown/core` and `@neverdown/sdk` build and pack as Node packages; an external consumer installed both tarballs and passed a live read-only ENS → Arkiv → capability check. The packages are **not published to npm**. The SDK also includes an in-process failure spot monitor for dApp probes and explicit error reports. Built-in paid procurement and gateway installation currently support the RPC adapter.
+
 Audience and runtime (locked):
 
 | Decision | Choice | Why |
@@ -57,8 +59,8 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 **Gate**
 
-- [ ] Package installs in the monorepo
-- [ ] No banned symbols reachable from `@neverdown/sdk` (mirror/extend `security.test.ts`)
+- [x] Package installs in the monorepo
+- [x] No banned symbols reachable from `@neverdown/sdk` (mirror/extend `security.test.ts`)
 - [ ] Commit message: `feat(sdk): S0 safe re-export package`
 
 ---
@@ -70,12 +72,12 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 - `NeverDown.create({ env })` validates required read env (`ENS_RPC_URL`, `ENS_ALLOWLIST_NAMES`, Arkiv access as needed).
 - Methods: `resolveSeller`, `discoverOffers`, `proveCapability`.
 - Hermetic unit tests with mocked providers (no live network required).
-- Thin script e.g. `pnpm sdk:smoke` for local read-only check against `.env.agent`.
+- Thin script `pnpm sdk:smoke` for local read-only check against the ignored root `.env`.
 
 **Gate**
 
-- [ ] Unit tests pass
-- [ ] Live smoke optional but documented
+- [x] Unit tests pass
+- [x] Live smoke documented; external tarball consumer passed the live read-only flow
 - [ ] Commit: `feat(sdk): S1 read-only NeverDown client`
 
 ---
@@ -90,8 +92,8 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 **Gate**
 
-- [ ] Hermetic IPC settle + deny tests pass
-- [ ] `pnpm --filter @neverdown/core test` still green
+- [x] Hermetic IPC settle + deny tests pass, including an SDK test through a real compiled worker
+- [x] `pnpm --filter @neverdown/core test` still green
 - [ ] Commit: `feat(sdk): S2 procure through payment worker`
 
 ---
@@ -105,12 +107,12 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 **Gate**
 
-- [ ] Console can import status helpers without deep core paths for those calls
+- [x] Console imports `@neverdown/sdk/status` for gateway status
 - [ ] Commit: `feat(sdk): S3 status helpers for console`
 
 ---
 
-### S4 — Public npm (later)
+### S4 — Publish-ready package (publication later)
 
 **Build only after S2 is solid**
 
@@ -120,8 +122,14 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 **Gate**
 
-- [ ] External README example runs against testnet with documented env
-- [ ] Commit: `feat(sdk): S4 publish-ready package docs`
+- [x] External tarball consumer runs the read-only README example against testnet with documented env
+- [x] Commit: `feat(sdk): S4 publish-ready package docs`
+
+The distribution packages require Node.js 22.13 or newer for `node:sqlite`. `@neverdown/core` must be published before `@neverdown/sdk`; publication requires access to the `@neverdown` npm scope and is a separate external action.
+
+### DApp failure signals (implemented)
+
+`FailureSpotMonitor` registers a service-specific `probe` and accepts explicit `reportFailure(id, reason)` calls for semantic app errors. It emits one incident per outage after a configurable threshold, resets on `reportHealthy`, and invokes an application callback for fast recovery and follow-up procurement. The monitor is in memory; durable coordination and non-RPC procurement adapters remain outside this SDK slice. See `packages/sdk/README.md`.
 
 ---
 
@@ -130,16 +138,15 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 - Browser wallet SDK that signs Hedera spends
 - Rewriting sellers/gateway into the SDK package
 - Claiming production-grade key isolation beyond C3 PARTIAL honesty
-- One-shot “full product SDK” PR spanning S0–S4
+- One-shot “full product SDK” PR spanning S0–S4 (the implementation used separate commits)
 
 ---
 
 ## Suggested order of work
 
 1. Finish demo polish (ENS on-chain texts when funded, video) in parallel if needed — SDK does not block judging.
-2. Implement **S0 → S1 → S2** in separate commits; stop if a gate fails.
-3. S3 only if console cleanup is worth it before submit.
-4. S4 after the hackathon unless a prize explicitly requires a published package.
+2. S0 → S3 are implemented in separate commits; run each package's tests when changing the SDK.
+3. S4 packaging is ready; publish only after the team controls the npm scope and approves a release.
 
 ## Pitch one-liner
 

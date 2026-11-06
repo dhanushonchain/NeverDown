@@ -1,27 +1,9 @@
-# `@neverdown/core`
+# @neverdown/core
 
-Shared NeverDown logic.
+Core rails for NeverDown's programmable resilience operator. This package is a dependency of `@neverdown/sdk`; most applications should use the SDK client.
 
-| Chunk | Module |
-|---|---|
-| C0 | `neverdownIdentity()` |
-| **C2** | `src/x402/` — Hedera buyer (`payForRpcOnce`, `loadBuyerConfig`) |
-| **C3** | `src/policy/` + `src/hcs/` — authorize-before-sign + HCS audit |
-| **C5** | `src/arkiv/` — capability offer seed + `discoverOffers` |
-| **C6** | `src/ens/` — ENSv2 allowlist resolve |
-| **C7** | `src/poc/` — Proof-of-Capability before install |
-| **C8** | `src/agent/` — Supreme Agent procure / deny |
-| C9+ | UI |
+Requires Node.js 22.13 or newer. The public package entry exports read-only ENS, Arkiv, and capability helpers plus a payment-worker IPC handle. It does not export the raw Hedera signing helpers, budget store, or HCS client. Import only from the documented package entry.
 
-## Quick use
+The payment worker runs as a child process. The SDK host must not have Hedera signing keys in its environment. The worker reads a separate mode-0600 environment file configured by `PAYMENT_WORKER_ENV_FILE`. This is a process and file-permission boundary, not separate OS-user isolation.
 
-```bash
-pnpm --filter @neverdown/core test
-pnpm pay:once       # C2; needs .env spend keys + sellers running
-pnpm policy:smoke   # C3 authorization smoke
-pnpm hcs:smoke      # C3 live HCS (operator + topic)
-pnpm arkiv:seed     # C5 write offers
-pnpm arkiv:query    # C5 discover live offers
-```
-
-Details: [docs/C2-PAY-ONCE.md](../../docs/C2-PAY-ONCE.md) · [docs/C3-POLICY-HCS.md](../../docs/C3-POLICY-HCS.md) · [docs/C5-ARKIV.md](../../docs/C5-ARKIV.md) · [docs/BUILD-CHUNKS.md](../../docs/BUILD-CHUNKS.md).
+See the [NeverDown repository](https://github.com/dhanushonchain/NeverDown) for architecture, local testnet setup, and security limitations.

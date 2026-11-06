@@ -1,9 +1,13 @@
 {
   "name": "@neverdown/core",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "NeverDown policy, agent, Arkiv, ENS, x402, HCS, PoC (C2–C8)",
   "type": "module",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/dhanushonchain/NeverDown.git", "directory": "packages/core" },
+  "engines": { "node": ">=22.13.0" },
+  "files": ["dist"],
+  "publishConfig": { "access": "public" },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

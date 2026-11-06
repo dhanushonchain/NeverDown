@@ -31,17 +31,20 @@ function buildWorkerEnv(envFile: string): NodeJS.ProcessEnv {
   return env;
 }
 
-function workerEntryPath() {
-  // prefer compiled JS if exists, else ts source (resolved by tsx loader)
-  const base = new URL(".", import.meta.url);
-  return fileURLToPath(new URL("worker.ts", base));
+export function workerLaunchSpec(clientModuleUrl: string = import.meta.url): { entryPath: string; execArgv: string[] } {
+  const source = new URL(clientModuleUrl).pathname.endsWith(".ts");
+  return {
+    entryPath: fileURLToPath(new URL(source ? "worker.ts" : "worker.js", clientModuleUrl)),
+    execArgv: source ? ["--import", "tsx"] : [],
+  };
 }
 
 export function startPaymentWorker(options: { envFile: string; timeoutMs?: number }): PaymentWorkerHandle {
   requireParentClean();
-  const child = fork(workerEntryPath(), [], {
+  const launch = workerLaunchSpec();
+  const child = fork(launch.entryPath, [], {
     env: buildWorkerEnv(options.envFile),
-    execArgv: process.versions.node ? ["--import", "tsx"] : [],
+    execArgv: launch.execArgv,
     stdio: ["ignore", "inherit", "inherit", "ipc"],
   });
 
