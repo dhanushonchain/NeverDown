@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@neverdown/core": "workspace:*"
+    "@neverdown/core": "workspace:*",
+    "@neverdown/sdk": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.20.0",

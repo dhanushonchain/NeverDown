@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, extname, sep } from "node:path";
 import { IncidentLedger } from "../../../packages/core/src/agent/coordinator.js";
+import { getGatewayStatus } from "@neverdown/sdk/status";
 import { evidenceResponse } from "./evidence.js";
 
 const PORT = Number(process.env.WEB_PORT ?? 3000);
@@ -36,12 +37,6 @@ const MIME: Record<string, string> = {
   ".woff2": "font/woff2",
 };
 
-async function fetchGateway(path: string) {
-  const r = await fetch(`${GATEWAY_URL}${path}`);
-  const json = await r.json().catch(() => ({}));
-  return { ok: r.ok, status: r.status, body: json };
-}
-
 async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: string) {
   if (req.method === "GET" && (pathname === "/api/incidents" || pathname.startsWith("/api/incidents/"))) {
     const result = evidenceResponse(pathname, incidentLedger);
@@ -51,8 +46,8 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
   }
   if (pathname === "/api/status" && req.method === "GET") {
     try {
-      const [ready, status] = await Promise.all([fetchGateway("/ready"), fetchGateway("/status")]);
-      send(res, 200, { ready: ready.body, status: status.body, gatewayUrl: GATEWAY_URL });
+      const { ready, status } = await getGatewayStatus(GATEWAY_URL);
+      send(res, 200, { ready, status, gatewayUrl: GATEWAY_URL });
     } catch (e) {
       send(res, 502, { error: e instanceof Error ? e.message : "gateway unavailable" });
     }
