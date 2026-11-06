@@ -22,3 +22,5 @@ export type {
 } from "@neverdown/core";
 export { NeverDown } from "./client.js";
 export type { NeverDownOptions, ProcureInput, ProcureReceipt } from "./client.js";
+export { FailureSpotMonitor } from "./monitor.js";
+export type { FailureIncident, FailureSpot } from "./monitor.js";

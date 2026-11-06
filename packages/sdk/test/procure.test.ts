@@ -23,8 +23,9 @@ function setup(overrides: Record<string, unknown> = {}) {
       requests.push(request);
       return { status: "SETTLED", purchaseId: "incident-1", transactionId: "0.0.1@123.456", hashscanUrl: "https://hashscan.io/testnet/transaction/tx", auditStatus: "published", entitlementToken: "private-entitlement-token" };
     }, close: () => { closed = true; } }),
-    fetchImpl: async (_url: string, init: { headers?: Record<string, string>; body?: string }) => {
+    fetchImpl: async (_url: string, init: { method?: string; headers?: Record<string, string>; body?: string }) => {
       assert.equal(init.headers?.["x-gateway-internal-token"], "gateway-token-1234567890");
+      if (init.method === "GET") return { ok: true, json: async () => ({ ready: true }) };
       const body = JSON.parse(String(init.body)) as { entitlementToken: string };
       assert.equal(body.entitlementToken, "private-entitlement-token");
       installed = true;
@@ -63,7 +64,9 @@ describe("worker-backed procurement", () => {
     const denial = await denied.client.procure({ incidentId: "incident-1", serviceId: "rpc-main", offer });
     assert.equal(denial.status, "DENIED");
     assert.equal(denial.installed, false);
-    const failed = setup({ fetchImpl: async () => ({ ok: false, status: 503, json: async () => ({ error: "gateway down" }) }) });
+    const failed = setup({ fetchImpl: async (_url: string, init: { method: string }) => init.method === "GET"
+      ? { ok: true, json: async () => ({ ready: true }) }
+      : { ok: false, status: 503, json: async () => ({ error: "gateway down" }) } });
     const receipt = await failed.client.procure({ incidentId: "incident-1", serviceId: "rpc-main", offer });
     assert.equal(receipt.status, "SETTLED");
     assert.equal(receipt.installed, false);
@@ -84,5 +87,11 @@ describe("worker-backed procurement", () => {
     const receipt = await ctx.client.procure({ incidentId: "incident-1", serviceId: "rpc-main", offer });
     assert.equal(receipt.status, "UNCERTAIN");
     assert.equal(receipt.installed, false);
+  });
+
+  it("refuses to pay when the gateway install API is disabled", async () => {
+    const ctx = setup({ fetchImpl: async () => ({ ok: false, status: 404 }) });
+    await assert.rejects(ctx.client.procure({ incidentId: "incident-1", serviceId: "rpc-main", offer }), /gateway install API/);
+    assert.equal(ctx.requests.length, 0);
   });
 });

@@ -233,6 +233,18 @@ it("uses a private standby entitlement for probes and forwarded RPC", async () =
   } finally { await gateway.close(); await seller.close(); }
 });
 
+it("reports whether the authenticated install API is available before payment", async () => {
+  const cfg = baseConfig({ providers: [{ id: "primary", url: "http://127.0.0.1:1/rpc" }], internalApiEnabled: true, internalToken: "admin-test-token" }) as never;
+  const gateway = await listen(createGatewayApp({ config: cfg }).app);
+  try {
+    const denied = await fetch(`${gateway.baseUrl}/_internal/ready`);
+    assert.equal(denied.status, 401);
+    const ready = await fetch(`${gateway.baseUrl}/_internal/ready`, { headers: { "x-gateway-internal-token": "admin-test-token" } });
+    assert.equal(ready.status, 200);
+    assert.equal((await ready.json() as { ready: boolean }).ready, true);
+  } finally { await gateway.close(); }
+});
+
 it("gives each gateway runtime a distinct incident namespace", () => {
   const config = baseConfig({ providers: [{ id: "primary", url: "http://127.0.0.1:1/rpc" }] });
   const first = new GatewayController(config);

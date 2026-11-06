@@ -40,4 +40,15 @@ describe("NeverDown read-only client", () => {
     });
     await assert.rejects(client.proveCapability({ rpcUrl: "https://seller.example/probe", expectedChainId: 11155111, payTo: "0.0.123", ensPayTo: "0.0.123" }), /POC_REFERENCE_RPC/);
   });
+
+  it("bounds network calls made by the default capability proof", async () => {
+    let sawFetch = false;
+    const client = createNeverDownClient({ env }, {
+      resolve: async () => { throw new Error("unused"); },
+      discover: async () => [],
+      prove: async (input) => { sawFetch = typeof input.fetchImpl === "function"; return { pass: true, checks: [] }; },
+    });
+    await client.proveCapability({ rpcUrl: "https://seller.example/probe", expectedChainId: 11155111, payTo: "0.0.123", ensPayTo: "0.0.123" });
+    assert.equal(sawFetch, true);
+  });
 });

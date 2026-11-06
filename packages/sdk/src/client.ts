@@ -85,7 +85,8 @@ export class NeverDown {
     const referenceRpcUrl = this.env.POC_REFERENCE_RPC;
     if (!referenceRpcUrl) throw new Error("POC_REFERENCE_RPC is required for an independent proof");
     if (referenceRpcUrl === input.rpcUrl) throw new Error("POC_REFERENCE_RPC must differ from candidate URL");
-    return this.ports.prove({ ...input, referenceRpcUrl });
+    const boundedFetch: typeof fetch = (resource, init) => fetch(resource, { ...init, signal: init?.signal ?? AbortSignal.timeout(6000) });
+    return this.ports.prove({ ...input, referenceRpcUrl, fetchImpl: input.fetchImpl ?? boundedFetch });
   }
 
   async procure(input: ProcureInput): Promise<ProcureReceipt> {
@@ -111,6 +112,15 @@ export class NeverDown {
     const gatewayUrl = this.env.GATEWAY_URL?.replace(/\/+$/, "");
     const gatewayToken = this.env.GATEWAY_INTERNAL_TOKEN;
     if (!gatewayUrl || !gatewayToken || gatewayToken.length < 20) throw new Error("GATEWAY_URL and GATEWAY_INTERNAL_TOKEN are required before payment");
+    let gatewayReady: Response;
+    try {
+      gatewayReady = await (this.ports.fetchImpl ?? fetch)(`${gatewayUrl}/_internal/ready`, {
+        method: "GET",
+        headers: { "x-gateway-internal-token": gatewayToken },
+        signal: AbortSignal.timeout(5000),
+      });
+    } catch { throw new Error("gateway install API unavailable before payment"); }
+    if (!gatewayReady.ok || (await gatewayReady.json() as { ready?: unknown }).ready !== true) throw new Error("gateway install API unavailable before payment");
     const worker = (this.ports.worker ?? startPaymentWorker)({ envFile: workerFile, timeoutMs: 120_000 });
     let outcome: Record<string, unknown>;
     try {
