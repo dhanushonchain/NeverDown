@@ -21,4 +21,4 @@ export type {
   CapabilityOfferRow,
 } from "@neverdown/core";
 export { NeverDown } from "./client.js";
-export type { NeverDownOptions } from "./client.js";
+export type { NeverDownOptions, ProcureInput, ProcureReceipt } from "./client.js";
