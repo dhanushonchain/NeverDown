@@ -1,0 +1,14 @@
+FROM node:22-bookworm
+
+WORKDIR /app
+RUN corepack enable
+
+COPY . .
+RUN corepack pnpm install --frozen-lockfile
+RUN corepack pnpm -r build
+
+ENV NODE_ENV=production
+ENV PORT=8080
+EXPOSE 8080
+
+CMD ["node", "--import", "tsx", "scripts/hosted-backend.mts"]

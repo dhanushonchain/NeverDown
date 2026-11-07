@@ -1,0 +1,35 @@
+app = "neverdown-backend"
+primary_region = "bom"
+
+[build]
+  dockerfile = "Dockerfile.backend"
+
+[env]
+  PORT = "8080"
+  NEVERDOWN_DATA_DIR = "/data"
+  COORDINATOR_ENABLED = "true"
+  GATEWAY_INTERNAL_API = "true"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "20s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[mounts]
+  source = "neverdown_data"
+  destination = "/data"
+  initial_size = "1GB"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

@@ -198,6 +198,25 @@ describe("C4 single-provider degraded mode", () => {
   });
 });
 
+it("requires a client token when the RPC gateway is public", async () => {
+  const upstream = await startMockRpc({ chainId: 11155111, blockNumber: 1000 });
+  const token = "client-token-12345678901234567890";
+  const { app, controller } = createGatewayApp({ config: baseConfig({ providers: [{ id: "primary", url: upstream.url }], rpcToken: token }) });
+  const server = await listen(app);
+  try {
+    await controller.probeOnce();
+    const body = { jsonrpc: "2.0", id: 1, method: "eth_chainId", params: [] };
+    const denied = await post(server.baseUrl, body);
+    assert.equal(denied.status, 401);
+    const allowed = await fetch(`${server.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json", "x-gateway-rpc-token": token }, body: JSON.stringify(body) });
+    assert.equal(allowed.status, 200);
+    assert.equal((await allowed.json() as { result: string }).result, "0xaa36a7");
+  } finally {
+    await server.close();
+    await upstream.stopped();
+  }
+});
+
 it("uses a private standby entitlement for probes and forwarded RPC", async () => {
   const entitlementToken = "private-test-token-1234567890123456";
   const standby = express();

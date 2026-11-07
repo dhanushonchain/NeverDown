@@ -12,6 +12,7 @@ export interface GatewayConfig {
   failoverCooldownMs: number;
   internalApiEnabled: boolean;
   internalToken?: string;
+  rpcToken?: string;
 }
 
 export class ConfigError extends Error {
@@ -78,5 +79,6 @@ export function loadGatewayConfig(env: NodeJS.ProcessEnv = process.env): Gateway
     failoverCooldownMs: intEnv(env, "GATEWAY_FAILOVER_COOLDOWN_MS", 15000, 0, 300_000),
     internalApiEnabled: (env.GATEWAY_INTERNAL_API ?? "").trim().toLowerCase() === "true",
     internalToken: (env.GATEWAY_INTERNAL_TOKEN ?? "").trim() || undefined,
+    rpcToken: (env.GATEWAY_RPC_TOKEN ?? "").trim() || undefined,
   };
 }

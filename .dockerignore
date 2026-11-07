@@ -1,0 +1,15 @@
+.git
+.vercel
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+**/dist
+dist-vercel
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+.mywork
+*.log

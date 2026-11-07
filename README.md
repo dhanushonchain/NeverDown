@@ -270,6 +270,8 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS), then run `chmod
 
 Setup for live rails: [docs/LIVE-BACKEND-ACCEPTANCE.md](docs/LIVE-BACKEND-ACCEPTANCE.md) · one private root `.env` (migrate old profiles with `pnpm env:bootstrap`) · `pnpm preflight:live` · `pnpm agent:live`.
 
+Always-on backend deployment design and commands: [docs/HOSTED-BACKEND.md](docs/HOSTED-BACKEND.md). The Vercel site remains a static preview until a hosted backend is launched and connected.
+
 **Security honesty:** C3 payment worker isolation is **PARTIAL** (same-OS-user file access). See [docs/C3-SECURITY-GATE.md](docs/C3-SECURITY-GATE.md).
 
 Built for **ETHGlobal Mumbai 2026**.

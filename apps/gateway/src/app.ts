@@ -32,6 +32,10 @@ export function createGatewayApp(opts: AppOptions): { app: Application; controll
   });
 
   app.post("/rpc", express.json({ limit: RPC_BODY_LIMIT }), async (req: Request, res: Response) => {
+    if (config.rpcToken && req.headers["x-gateway-rpc-token"] !== config.rpcToken) {
+      res.status(401).json({ error: "unauthorized" });
+      return;
+    }
     const body = req.body;
 
     if (Array.isArray(body) || typeof body !== "object" || body === null) {
