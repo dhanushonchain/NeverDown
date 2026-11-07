@@ -11,7 +11,7 @@ for every unauthenticated RPC call and never runs the RPC operation without paym
 Paying, verifying, and settling a payment from a buyer is **C2**, not C1.
 
 ## Architecture
-
+  
 ```
 client ──POST /rpc──▶ express.json (16 kB limit)
                      └─▶ JSON-RPC shape + method allowlist   (400, no 402, no upstream)
