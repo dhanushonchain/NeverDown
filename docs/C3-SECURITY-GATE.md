@@ -5,6 +5,8 @@
 **Verdict:** PARTIAL (best-effort process boundary; not OS-enforced isolation).  
 **C8 readiness:** Worker handoff and live testnet settlement have been verified; OS-enforced separation remains open. See [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md).
 
+The hosted Heroku backend uses Postgres for policy reservations, HCS outbox, and incident claims; local development still uses SQLite. The worker receives `DATABASE_URL` through its mode-0600 file. The parent process also has database access for incident coordination. This does not strengthen the PARTIAL isolation verdict.
+
 Related: [C3-POLICY-HCS.md](./C3-POLICY-HCS.md) · [C8-AGENT.md](./C8-AGENT.md)
 
 ---

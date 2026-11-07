@@ -1,6 +1,6 @@
 # Always-on backend deployment
 
-The Vercel site is a static preview. The backend needs a continuously running gateway and coordinator, plus durable policy and incident ledgers. The current deployment target is one Fly Machine with a 1 GB volume mounted at `/data`. The seller remains on its existing Heroku app.
+The Vercel site is a static preview. The active backend deployment is the [Heroku backend](./HEROKU-BACKEND.md), using a Basic dyno and the seller's shared Postgres add-on. The Fly configuration below remains an alternate single-machine deployment path.
 
 ## What is prepared
 
