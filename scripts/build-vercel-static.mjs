@@ -8,6 +8,7 @@ const output = join(root, "dist-vercel");
 const assets = [
   "index.html",
   "console.html",
+  "console.css",
   "sdk.html",
   "light-nd.png",
   "dark-nd.png",

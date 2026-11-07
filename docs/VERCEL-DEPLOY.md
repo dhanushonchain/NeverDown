@@ -2,7 +2,7 @@
 
 Production URL: https://getneverdown.vercel.app
 
-The Vercel project serves a static build of `apps/web/public`. The homepage is `/`, the five-card console is `/console.html`, and the SDK example is `/sdk.html`. The root `vercel.json` runs `scripts/build-vercel-static.mjs`, which copies only those pages, logo images, fonts, and font license to `dist-vercel`. No Hedera, Arkiv, or signing credentials are sent to Vercel.
+The Vercel project serves a static build of `apps/web/public`. The homepage is `/`, the five-card console is `/console.html`, and the SDK example is `/sdk.html`. The root `vercel.json` runs `scripts/build-vercel-static.mjs`, which copies those pages, `console.css`, logo images, fonts, and font license to `dist-vercel`. No Hedera, Arkiv, or signing credentials are sent to Vercel.
 
 The hosted preview intentionally labels live gateway status and agent actions as local-only. Its side chat can explain the workflow, but live status and evidence answers require the local console. The chat cannot initiate purchases or change policy. The backend uses a continuously running gateway/coordinator and persistent SQLite ledgers; these services are not deployed with this static site. Vercel Functions do not provide shared persistent SQLite storage. Do not describe the Vercel preview as a live resilience operator.
 
