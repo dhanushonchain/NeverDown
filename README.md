@@ -1,5 +1,5 @@
 # NeverDown
-
+ 
 ### The Autonomous Resilience Operator for Web3
 
 **ETHGlobal Mumbai 2026** · Repo: [github.com/dhanushonchain/NeverDown](https://github.com/dhanushonchain/NeverDown)
