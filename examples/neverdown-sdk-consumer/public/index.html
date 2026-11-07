@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acme Ops — with vs without @neverdown/sdk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="top">
+    <div class="brand">
+      <p class="eyebrow">Separate consumer app · not the NeverDown console</p>
+      <h1>Acme&nbsp;Ops</h1>
+      <p class="tag">Same failure spot, two runs — first <strong>without</strong> the SDK, then <strong>with</strong> <code>@neverdown/sdk</code>.</p>
+    </div>
+    <div class="meta" id="meta">
+      <span class="pill" id="gatewayPill">gateway…</span>
+      <span class="pill muted" id="ensPill">ENS…</span>
+      <span class="pill muted" id="sdkPill">SDK offline</span>
+      <span class="pill muted" id="nowPill">idle</span>
+    </div>
+  </header>
+
+  <section class="compare" aria-label="Before and after SDK">
+    <article class="lane without" id="laneWithout">
+      <header>
+        <p class="lane-kicker">Run 1</p>
+        <h2>Without SDK</h2>
+        <p class="lane-sub">Hard-coded dependency. Retries. No discovery. No pay. No install.</p>
+      </header>
+      <pre class="code" aria-hidden="true">const rpc = "https://primary.example/rpc";
+await fetch(rpc); // fails
+await fetch(rpc); // fails again
+// stuck — operator pages someone</pre>
+      <button type="button" data-action="without" class="warn">1 · Simulate outage (no SDK)</button>
+      <div class="verdict" id="verdictWithout" data-state="idle">Waiting…</div>
+      <ol class="steps" id="stepsWithout"></ol>
+    </article>
+
+    <article class="lane with" id="laneWith">
+      <header>
+        <p class="lane-kicker">Run 2</p>
+        <h2>With <code>@neverdown/sdk</code></h2>
+        <p class="lane-sub">Monitor → ENS → Arkiv → prove → procure → install. Same Acme Ops process.</p>
+      </header>
+      <pre class="code" aria-hidden="true">import { NeverDown, FailureSpotMonitor } from "@neverdown/sdk";
+const nd = NeverDown.create({ env });
+// detect → resolve → discover → prove → procure</pre>
+      <div class="btn-row">
+        <button type="button" data-action="with" class="accent">2 · Recover with SDK</button>
+        <button type="button" data-action="procure" class="ghost-fill">3 · Live procure + install (HBAR)</button>
+      </div>
+      <div class="verdict" id="verdictWith" data-state="idle">Waiting…</div>
+      <ol class="steps" id="stepsWith"></ol>
+    </article>
+  </section>
+
+  <section class="stage">
+    <div class="stage-head">
+      <h2>What each step adds</h2>
+      <button type="button" id="clear" class="ghost">Clear</button>
+    </div>
+    <ul class="delta" id="delta">
+      <li data-key="detect" data-label="Detect failure spot">Detect failure spot — not yet</li>
+      <li data-key="ens" data-label="Verify seller via ENS">Verify seller via ENS — not yet</li>
+      <li data-key="discover" data-label="Discover offer on Arkiv">Discover offer on Arkiv — not yet</li>
+      <li data-key="prove" data-label="Prove capability before pay">Prove capability before pay — not yet</li>
+      <li data-key="deny" data-label="Fail closed on bad payTo">Fail closed on bad payTo — not yet</li>
+      <li data-key="procure" data-label="Pay via x402 worker">Pay via x402 worker — not yet</li>
+      <li data-key="install" data-label="Install standby on gateway">Install standby on gateway — not yet</li>
+    </ul>
+    <div id="evidence" class="evidence" hidden><span>Evidence</span></div>
+    <pre id="detail" class="detail" hidden></pre>
+  </section>
+
+  <footer>
+    <span>Port 3100 · example imports <code>@neverdown/sdk</code> server-side only</span>
+    <a href="https://github.com/dhanushonchain/NeverDown" target="_blank" rel="noreferrer">NeverDown repo</a>
+  </footer>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

@@ -4,91 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NeverDown Console</title>
-  <style>
-    @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Regular.woff2") format("woff2"); font-weight:400; font-style:normal; font-display:swap; }
-    @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Bold.woff2") format("woff2"); font-weight:700; font-style:normal; font-display:swap; }
-    @font-face { font-family:"Redaction 50"; src:url("/fonts/Redaction50-Italic.woff2") format("woff2"); font-weight:400; font-style:italic; font-display:swap; }
-    :root { --bg:#f3f0e7; --surface:#f0ede4; --card:#2a2529; --card-text:#f3f0e7; --card-muted:#d8d0c8; --border:#d9d6cf; --muted:#5f5a54; --text:#1e1e1e; --accent:#1e1e1e; --accent-text:#f3f0e7; --success:#1f8a6a; --warn:#a87b1e; --bad:#c94b4b; --card-border:#51484e; --card-shadow:0 20px 42px -24px rgba(31,22,24,.48),0 8px 16px -12px rgba(31,22,24,.36); --card-shadow-hover:0 28px 50px -22px rgba(31,22,24,.55),0 10px 20px -12px rgba(31,22,24,.42); --input-bg:#393238; --input-text:#fffaf2; --input-border:#70656a; --action-bg:#f3e3c5; --action-text:#292329; --step-bg:#383136; }
-html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --card-text:#2a2529; --card-muted:#514b48; --border:#1e1a1e; --muted:#b4aca5; --text:#f3f0e7; --accent:#f3f0e7; --accent-text:#2a2529; --success:#45d19b; --warn:#f4bf61; --bad:#ff6b6b; --card-border:#d8d0c6; --card-shadow:0 22px 46px -24px rgba(0,0,0,.64),0 8px 18px -12px rgba(0,0,0,.54); --card-shadow-hover:0 30px 54px -22px rgba(0,0,0,.75),0 12px 22px -12px rgba(0,0,0,.62); --input-bg:#fffaf2; --input-text:#2a2529; --input-border:#b9afa6; --action-bg:#2a2529; --action-text:#f3f0e7; --step-bg:#e6ded2; }
-
-    * { box-sizing:border-box; font-family:"Redaction 50", Georgia, serif; }
-    html { scroll-behavior:smooth; }
-    body { margin:0; background:var(--bg); color:var(--text); line-height:1.5; }
-    .site-header { max-width:1280px; min-height:76px; margin:0 auto; padding:16px 24px; display:flex; align-items:center; gap:24px; }
-    .brand { display:inline-flex; align-items:center; gap:10px; color:var(--text); text-decoration:none; font-size:1.25rem; font-weight:700; }
-    .brand em { font-style:italic; }
-    .brand-mark { width:52px; height:52px; margin:-5px; border-radius:10px; object-fit:cover; }
-    .brand-mark-dark { display:none; }
-    html[data-theme="dark"] .brand-mark-light { display:none; }
-    html[data-theme="dark"] .brand-mark-dark { display:block; }
-    main { max-width:1280px; margin:0 auto; padding:24px 24px 64px; }
-    .intro { display:flex; align-items:end; justify-content:space-between; gap:24px; margin:8px 0 30px; padding-bottom:28px; border-bottom:1px solid var(--border); }
-    .intro h1 { margin:8px 0 10px; font-size:clamp(1rem,5.4vw,3.4rem); line-height:1.05; letter-spacing:-.045em; white-space:nowrap; }
-    .section-tag { font-size:.72rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
-    h1,h2,h3 { margin-top:0; }
-    .workspace { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(310px, .9fr); gap:24px; align-items:start; }
-    .card-flow { min-width:0; margin:0; }
-    .card-flow .card { min-width:0; height:520px; overflow-y:auto; overflow-wrap:anywhere; }
-    .chat-panel { min-width:0; height:592px; display:flex; flex-direction:column; background:var(--card); color:var(--card-text); border:1px solid var(--card-border); border-radius:18px; box-shadow:var(--card-shadow); overflow:hidden; }
-    .chat-panel .muted { color:var(--card-muted); }
-    .chat-header { padding:20px 20px 16px; border-bottom:1px solid var(--card-border); }
-    .chat-header .section-tag { color:var(--card-muted); margin-bottom:6px; }
-    .chat-header h2 { margin:0 0 4px; font-size:1.3rem; line-height:1.2; }
-    .chat-header p { margin:0; }
-    .chat-messages { flex:1; min-height:0; overflow-y:auto; padding:18px 16px; display:flex; flex-direction:column; gap:12px; }
-    .chat-message { max-width:94%; padding:11px 13px; border-radius:13px; background:var(--step-bg); color:var(--card-text); border:1px solid var(--card-border); white-space:pre-wrap; overflow-wrap:anywhere; font-size:.9rem; }
-    .chat-message.user { align-self:flex-end; background:var(--action-bg); color:var(--action-text); border-color:var(--action-bg); }
-    .chat-message.assistant { align-self:flex-start; }
-    .chat-prompts { display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 12px; }
-    .chat-prompts button { padding:6px 9px; border:1px solid var(--card-border); background:var(--step-bg); color:var(--card-text); font-size:.78rem; font-weight:400; }
-    .chat-form { display:flex; gap:8px; padding:14px 16px 16px; border-top:1px solid var(--card-border); }
-    .chat-form input { min-width:0; flex:1; margin:0; background:var(--input-bg); color:var(--input-text); border-color:var(--input-border); font-size:.9rem; }
-    .chat-form button { flex:none; background:var(--action-bg); color:var(--action-text); }
-    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-    .section-tag { display:block; margin-bottom:12px; color:var(--card-muted); }
-    .card { background:var(--card); color:var(--card-text); border-radius:18px; padding:24px; border:1px solid var(--card-border); box-shadow:var(--card-shadow); transition:box-shadow .22s ease,transform .22s ease,background .3s ease,color .3s ease; }
-    .card:hover { box-shadow:var(--card-shadow-hover); transform:translateY(-2px); }
-    .card h2 { margin-bottom:18px; line-height:1.2; }
-    .card > button { margin-top:8px; }
-    .metric { display:inline-block; margin:4px 0 12px; padding:7px 12px; border:1px solid var(--card-border); border-radius:9px; font-size:1.5rem; font-weight:700; }
-    .muted { color:var(--muted); font-size:0.9rem; }
-    .card .muted, .card label { color:var(--card-muted); }
-    button { border:0; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; transition:filter .15s ease,transform .15s ease; }
-    button:not(.theme-toggle):not(:disabled):hover { filter:brightness(1.08); transform:translateY(-1px); }
-    button:not(.theme-toggle):active { transform:translateY(0); }
-    button:disabled { opacity:.65; cursor:wait; }
-    button:focus-visible, a:focus-visible, input:focus-visible { outline:2px solid var(--success); outline-offset:3px; }
-    .primary { background:var(--action-bg); color:var(--action-text); }
-    .danger { background:var(--bad); color:#200505; }
-    .ok { background:var(--success); color:#04120b; }
-    label { display:block; margin-bottom:6px; color:var(--muted); font-size:.9rem; }
-    input, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--input-border); background:var(--input-bg); color:var(--input-text); margin-bottom:14px; font-size:1rem; }
-    .site-nav { display:flex; align-items:center; justify-content:center; gap:4px; flex:1; min-width:0; }
-    .site-nav a { color:var(--text); text-decoration:none; font-size:.88rem; padding:8px 10px; border-radius:8px; white-space:nowrap; }
-    .site-nav a:hover, .site-nav a:focus-visible, .site-nav a[aria-current="step"] { background:var(--surface); text-decoration:underline; text-underline-offset:3px; }
-    .flow-controls { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:20px 0 0; }
-    .flow-controls button { min-width:110px; background:var(--surface); color:var(--text); border:1px solid var(--border); }
-    .flow-controls button:last-child { background:var(--accent); color:var(--accent-text); }
-    .flow-controls button:disabled { cursor:not-allowed; opacity:.45; }
-    .flow-counter { color:var(--muted); font-size:.9rem; text-align:center; }
-    .theme-toggle { position:relative; z-index:1000; width:36px; height:36px; margin:0; padding:0; border:1px solid var(--border); border-radius:50%; display:grid; place-items:center; background:var(--card); color:var(--card-text); box-shadow:0 2px 8px rgba(0,0,0,.12); cursor:pointer; transition:transform .15s ease,background .3s ease,color .3s ease; flex-shrink:0; }
-    .theme-toggle:hover { transform:scale(1.1); }
-    .theme-toggle:active { transform:scale(.96); }
-    .theme-toggle .icon { width:16px; height:16px; }
-    html[data-theme="dark"] .theme-toggle .moon, html:not([data-theme="dark"]) .theme-toggle .sun { display:none; }
-    .theme-curtain { position:fixed; inset:0; z-index:999; pointer-events:none; background:var(--curtain-color, var(--bg)); transform:scaleY(0); transform-origin:top; }
-    .theme-curtain.falling { transform:scaleY(1); transition:transform 550ms cubic-bezier(.76,0,.24,1); }
-    .theme-curtain.rising { transform-origin:bottom; transform:scaleY(0); transition:transform 550ms cubic-bezier(.76,0,.24,1); }
-    .theme-toggle:focus-visible { outline:2px solid var(--text); outline-offset:3px; }
-    @media (prefers-reduced-motion: reduce) { .theme-curtain.falling, .theme-curtain.rising, .card { transition:none; } .card:hover { transform:none; } }
-    pre { max-height:250px; overflow:auto; white-space:pre-wrap; word-break:break-word; margin:16px 0 0; padding:14px; border:1px solid var(--card-border); border-radius:10px; background:var(--step-bg); color:var(--card-text); font:400 .8rem/1.5 ui-monospace,SFMono-Regular,monospace; }
-    .step { margin:8px 0; padding:10px 14px; border-left:4px solid var(--card-border); border-radius:8px; background:var(--step-bg); color:var(--card-text); }
-    .pass { border-color:var(--success); }
-    .fail { border-color:var(--bad); }
-    @media (max-width: 900px) { .workspace { grid-template-columns:1fr; } .chat-panel { height:440px; } }
-    @media (max-width: 700px) { .site-header { gap:8px; padding:12px 16px; } .brand span { display:none; } .site-nav { justify-content:flex-start; overflow-x:auto; scrollbar-width:none; } .site-nav::-webkit-scrollbar { display:none; } .site-nav a { padding:8px 6px; font-size:.8rem; } }
-    @media (max-width: 600px) { main { padding:16px 16px 48px; } .intro { display:block; } .card { padding:20px; } }
-  </style>
+  <link rel="stylesheet" href="/console.css">
 </head>
 <body>
 <div id="themeCurtain" class="theme-curtain" aria-hidden="true"></div>
@@ -110,52 +26,72 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
   <div class="intro">
     <div>
       <h1>The Policy that Never let you Down</h1>
+      <p class="muted">Five-act demo: write the Resilience Contract → watch the fast plane → procure capacity → prove deny-before-sign → open evidence.</p>
       <p id="hostedNotice" class="muted" hidden>This hosted preview shows the console. Live status and agent actions run in the local NeverDown backend.</p>
     </div>
   </div>
 
   <div class="workspace">
   <div class="card-flow" aria-label="Console steps">
-    <div class="card" id="contract">
+    <div class="card panel" id="contract">
       <span class="section-tag">01 / Policy</span>
       <h2>Act 1 — Resilience Contract</h2>
-      <label for="allowlist">Allowed sellers (comma separated)</label>
+      <p class="story">This is the programmable boundary. Before NeverDown can pay for replacement capacity, the purchase must pass <strong>allowlist</strong>, <strong>per-payment cap</strong>, and <strong>total budget</strong>. Fail any check → refuse before sign.</p>
+      <div class="stat-row" aria-live="polite">
+        <div class="stat"><span>Live spent</span><b id="spentStat">…</b></div>
+        <div class="stat"><span>Remaining</span><b id="remainStat">…</b></div>
+        <div class="stat"><span>ENS seller</span><b id="ensStat">…</b></div>
+      </div>
+      <label for="allowlist">Allowed sellers (Hedera payTo)</label>
       <input id="allowlist" value="0.0.11326899">
       <label for="maxPayment">Max payment (tinybars)</label>
       <input id="maxPayment" value="10000">
       <label for="budget">Total budget (tinybars)</label>
-      <input id="budget" value="30000">
-      <p class="muted">These values demonstrate policy reasoning. Production changes should still route through your env/policy files and security review.</p>
-      <button class="primary" onclick="runDeny()">Test policy denial</button>
+      <input id="budget" value="500000">
+      <p class="muted">Edit the contract, then run an attempt. Results appear here — nothing is signed in Act 1.</p>
+      <div class="btn-row">
+        <button class="danger" type="button" data-policy-mode="deny-recipient">Deny bad seller</button>
+        <button class="danger" type="button" data-policy-mode="deny-budget">Deny over budget</button>
+        <button class="primary" type="button" data-policy-mode="approve">Would approve?</button>
+      </div>
+      <div id="policyVerdict" class="verdict-banner" data-state="idle">Waiting for a policy attempt…</div>
+      <div id="policySteps" aria-live="polite"></div>
     </div>
 
-    <div class="card" id="status" hidden>
+    <div class="card panel" id="status" hidden>
       <span class="section-tag">02 / Recovery</span>
       <h2>Act 2 — Live Status</h2>
+      <p class="story">Fast plane only: gateway health and active route. No LLM, no payment, no Arkiv wait.</p>
       <div class="metric" id="active" aria-live="polite">Loading…</div>
-      <p class="muted">Selected gateway / primary and standby health. Gateway URL: <span id="gatewayUrl"></span></p>
+      <p class="muted">Gateway: <span id="gatewayUrl"></span></p>
+      <div id="providerGrid" class="provider-grid" aria-live="polite"></div>
       <button class="primary" id="refreshButton" onclick="refreshStatus()">Refresh status</button>
     </div>
-    <div class="card" id="procure" hidden>
+    <div class="card panel" id="procure" hidden>
       <span class="section-tag">03 / Procurement</span>
       <h2>Act 3 — Procure Scenario</h2>
-      <p class="muted">Default: hermetic (no spend). Set <code>AGENT_LIVE=true</code> in the web env to call <code>pnpm agent:live</code>.</p>
+      <p class="story">Supreme Agent path: discover → ENS → prove → policy → (optional) settle. Default is hermetic — no HBAR spent.</p>
+      <p class="muted">Live settle needs <code>AGENT_LIVE=true</code> in the web env.</p>
       <button class="primary" id="procureButton" onclick="runScenario('procure')">Run procurement</button>
-      <pre id="procureOutput" aria-live="polite">Waiting for a scenario.</pre>
+      <div id="procureVerdict" class="verdict-banner" data-state="idle">Waiting for a scenario.</div>
+      <div id="procureSteps" aria-live="polite"></div>
+      <pre id="procureOutput" hidden></pre>
     </div>
-    <div class="card" id="deny" hidden>
+    <div class="card panel" id="deny" hidden>
       <span class="section-tag">04 / Guardrail</span>
       <h2>Act 4 — Denial Attack</h2>
-      <p class="muted">Runs a forced bad recipient and confirms it is denied before any settlement.</p>
+      <p class="story">Force a bad recipient through the full agent path. Expect <code>RECIPIENT_NOT_ALLOWLISTED</code> and zero settlement.</p>
       <button class="danger" id="denyButton" onclick="runScenario('deny')">Run denial attack</button>
-      <pre id="denyOutput" aria-live="polite">Waiting for a scenario.</pre>
+      <div id="denyVerdict" class="verdict-banner" data-state="idle">Waiting for a scenario.</div>
+      <div id="denySteps" aria-live="polite"></div>
+      <pre id="denyOutput" hidden></pre>
     </div>
-    <div class="card" id="evidence" hidden>
+    <div class="card panel" id="evidence" hidden>
       <span class="section-tag">05 / Audit</span>
       <h2>Act 5 — Evidence Timeline</h2>
+      <p class="story">What judges can verify: gateway snapshot, ENS, Arkiv entity, HashScan payment, HCS topic.</p>
       <div id="timeline" aria-live="polite"><div class="step">Checking gateway status…</div></div>
       <div id="proofLinks" class="muted" style="margin-top:16px"></div>
-      <p class="muted">Gateway snapshots, agent receipts, HashScan, Arkiv entity, and ENS name for judges.</p>
       <button class="primary" type="button" onclick="loadEvidence()">Refresh proof links</button>
     </div>
     <nav class="flow-controls" aria-label="Card navigation">
@@ -164,14 +100,16 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
       <button id="nextCard" type="button">Next</button>
     </nav>
   </div>
-  <aside class="chat-panel" aria-label="Supreme Agent chat">
+  <aside class="chat-panel panel" aria-label="Supreme Agent chat">
     <div class="chat-header">
-      <span class="section-tag">Read-only guide</span>
+      <span class="section-tag">Live guide</span>
       <h2>Supreme Agent</h2>
-      <p class="muted">Ask about recovery, policy, and proof. Chat is read-only.</p>
+      <p class="muted">Live guide — checks status/policy/evidence, answers with paced think steps.</p>
     </div>
     <div id="chatMessages" class="chat-messages" role="log" aria-label="Chat messages" aria-live="polite" aria-relevant="additions"></div>
     <div class="chat-prompts" aria-label="Suggested questions">
+      <button type="button" data-chat-prompt="What is the need of NeverDown?">Why NeverDown</button>
+      <button type="button" data-chat-prompt="Explain the Resilience Contract">Resilience Contract</button>
       <button type="button" data-chat-prompt="What is the current status?">Current status</button>
       <button type="button" data-chat-prompt="How does recovery work?">How recovery works</button>
       <button type="button" data-chat-prompt="Show me the evidence">Evidence</button>
@@ -179,7 +117,7 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
     <form id="chatForm" class="chat-form">
       <label for="chatInput" class="sr-only">Message Supreme Agent</label>
       <input id="chatInput" name="message" type="text" maxlength="500" autocomplete="off" placeholder="Ask about this incident…" required>
-      <button id="chatSend" type="submit">Send</button>
+      <button id="chatSend" class="primary" type="submit">Send</button>
     </form>
   </aside>
   </div>
@@ -188,9 +126,19 @@ html[data-theme="dark"] { --bg:#2a2529; --surface:#242023; --card:#f3f0e7; --car
 const els = {
   active: document.getElementById('active'),
   gatewayUrl: document.getElementById('gatewayUrl'),
+  providerGrid: document.getElementById('providerGrid'),
   procureOutput: document.getElementById('procureOutput'),
   denyOutput: document.getElementById('denyOutput'),
+  procureSteps: document.getElementById('procureSteps'),
+  denySteps: document.getElementById('denySteps'),
+  procureVerdict: document.getElementById('procureVerdict'),
+  denyVerdict: document.getElementById('denyVerdict'),
+  policyVerdict: document.getElementById('policyVerdict'),
+  policySteps: document.getElementById('policySteps'),
   timeline: document.getElementById('timeline'),
+  spentStat: document.getElementById('spentStat'),
+  remainStat: document.getElementById('remainStat'),
+  ensStat: document.getElementById('ensStat'),
 };
 const hostedPreview = !['localhost', '127.0.0.1'].includes(window.location.hostname);
 if (hostedPreview) document.getElementById('hostedNotice').hidden = false;
@@ -200,61 +148,96 @@ const chatInput = document.getElementById('chatInput');
 const chatSend = document.getElementById('chatSend');
 let chatBusy = false;
 
-function addChatMessage(role, message) {
+function addChatMessage(role, message, extraClass = '') {
   const item = document.createElement('div');
-  item.className = `chat-message ${role}`;
+  item.className = `chat-message ${role}${extraClass ? ` ${extraClass}` : ''}`;
   item.textContent = message;
   chatMessages.append(item);
   chatMessages.scrollTop = chatMessages.scrollHeight;
+  return item;
 }
 
-async function answerChat(question) {
-  const text = question.toLowerCase();
-  if (/status|health|online|active|working|upstream/.test(text)) {
-    if (hostedPreview) return 'This page is a static preview. Open the local console to see live gateway status and provider health.';
-    try {
-      const response = await fetch('/api/status', { cache: 'no-store' });
-      if (!response.ok) throw new Error('gateway unavailable');
-      const data = await response.json();
-      const status = data.status || {};
-      const providers = Array.isArray(status.providers)
-        ? status.providers.map(provider => `${provider.id}: ${provider.healthy ? 'healthy' : 'unhealthy'}`).join(' · ')
-        : 'Provider details are unavailable.';
-      return `Active route: ${status.active || 'unknown'}. ${providers}`;
-    } catch {
-      return 'I cannot reach the local gateway right now. Start the gateway and refresh the Status card.';
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function typeAnswer(text) {
+  const item = addChatMessage('assistant', '', 'typing');
+  const chunk = Math.max(12, Math.ceil(text.length / 28));
+  for (let i = 0; i < text.length; i += chunk) {
+    item.textContent = text.slice(0, i + chunk);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    await sleep(28);
+  }
+  item.classList.remove('typing');
+  item.textContent = text;
+  return item;
+}
+
+function setVerdict(el, state, text) {
+  if (!el) return;
+  el.dataset.state = state;
+  el.className = `verdict-banner ${state === 'ok' ? 'ok' : state === 'bad' ? 'bad' : state === 'run' ? 'run' : ''}`;
+  el.textContent = text;
+}
+
+function renderSteps(container, steps) {
+  if (!container) return;
+  container.replaceChildren();
+  for (const step of steps) {
+    const item = document.createElement('div');
+    item.className = `step ${step.ok ? 'pass' : 'fail'}`;
+    const title = document.createElement('strong');
+    title.textContent = step.title;
+    item.append(title);
+    if (step.detail) {
+      const detail = document.createElement('div');
+      detail.textContent = step.detail;
+      item.append(detail);
+    }
+    if (step.adds) {
+      const adds = document.createElement('span');
+      adds.className = 'adds';
+      adds.textContent = `Adds · ${step.adds}`;
+      item.append(adds);
+    }
+    container.append(item);
+  }
+}
+
+async function streamAgentReply(question) {
+  if (hostedPreview) {
+    await sleep(700);
+    await typeAnswer('Hosted preview only. Open the local console so Supreme Agent can read live status, policy, and evidence.');
+    return;
+  }
+  const res = await fetch('/api/agent-chat', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', accept: 'application/x-ndjson' },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok || !res.body) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || `HTTP ${res.status}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, idx).trim();
+      buffer = buffer.slice(idx + 1);
+      if (!line) continue;
+      const event = JSON.parse(line);
+      if (event.type === 'think') addChatMessage('assistant', event.text, 'think');
+      if (event.type === 'answer') await typeAnswer(event.text);
+      if (event.type === 'error') throw new Error(event.error || 'agent chat failed');
     }
   }
-  if (/evidence|proof|receipt|hashscan|transaction|audit|hcs/.test(text)) {
-    if (hostedPreview) return 'Live evidence is available in the local console. This hosted page is a static preview.';
-    try {
-      const response = await fetch('/api/evidence', { cache: 'no-store' });
-      if (!response.ok) throw new Error('evidence unavailable');
-      const data = await response.json();
-      return `Recorded evidence: ENS ${data.ens || 'unknown'}; Arkiv entity ${data.arkivEntityKey || 'unknown'}; Hedera transaction ${data.transactionId || 'unknown'}. Open Act 5 for proof links. These IDs may be from a previous run.`;
-    } catch {
-      return 'Evidence is unavailable from the local backend. Check Act 5 after starting the console server.';
-    }
-  }
-  if (/recover|failover|standby|failure|outage/.test(text)) {
-    return 'The fast plane checks the primary and a preapproved standby. If the primary fails, the gateway switches to a healthy standby without waiting for the agent, ENS, Arkiv, or payment. Act 2 shows the current route in the local console.';
-  }
-  if (/policy|contract|budget|allowlist|cap|allowed/.test(text)) {
-    return 'The Resilience Contract sets approved sellers, payment caps, budgets, and allowed actions. The values in Act 1 demonstrate policy reasoning; changing them there does not edit the backend policy. A disallowed purchase is denied before signing.';
-  }
-  if (/deny|denied|attack|unsafe|reject/.test(text)) {
-    return 'Act 4 tests a bad recipient. Policy rejects it before signing, so no payment is settled. The local console shows the denial receipt and evidence.';
-  }
-  if (/procure|purchase|pay|seller|offer|arkiv|ens/.test(text)) {
-    return 'After recovery, procurement discovers an Arkiv offer, checks the seller identity through ENS, tests the capability, and asks policy to authorize payment and installation. The Act 3 button runs a no-spend demo by default; live mode requires separate backend configuration.';
-  }
-  if (/agent|how does it work/.test(text)) {
-    return 'The agent helps replenish capacity after the fast plane has recovered. It can discover offers, check identity and capability, request a policy-checked purchase, and install a verified standby. Chat here explains the workflow; the cards run the configured scenarios.';
-  }
-  if (/hello|hi|help|what is neverdown/.test(text)) {
-    return 'NeverDown keeps critical dependencies available under a written policy. Ask me about current status, recovery, procurement, policy, denial, or evidence.';
-  }
-  return 'I can explain status, recovery, policy, procurement, denial, and evidence. Try one of the suggested questions, or use the cards to run a scenario in the local console.';
 }
 
 async function sendChatQuestion(question) {
@@ -265,13 +248,33 @@ async function sendChatQuestion(question) {
   chatSend.disabled = true;
   addChatMessage('user', message);
   try {
-    addChatMessage('assistant', await answerChat(message));
+    await streamAgentReply(message);
+  } catch (error) {
+    addChatMessage('assistant', error instanceof Error ? error.message : String(error));
   } finally {
     chatBusy = false;
     chatInput.disabled = false;
     chatSend.disabled = false;
     chatInput.focus();
   }
+}
+
+function coach(message) {
+  void (async () => {
+    if (chatBusy) {
+      addChatMessage('assistant', message);
+      return;
+    }
+    chatBusy = true;
+    try {
+      await sleep(500);
+      addChatMessage('assistant', 'Noting the card result…', 'think');
+      await sleep(700);
+      await typeAnswer(message);
+    } finally {
+      chatBusy = false;
+    }
+  })();
 }
 
 chatForm.addEventListener('submit', event => {
@@ -283,7 +286,7 @@ chatForm.addEventListener('submit', event => {
 document.querySelectorAll('[data-chat-prompt]').forEach(button => {
   button.addEventListener('click', () => { void sendChatQuestion(button.dataset.chatPrompt || ''); });
 });
-addChatMessage('assistant', 'Supreme Agent guide here. I can explain each step and read live status or evidence when you run the local console. What would you like to know?');
+addChatMessage('assistant', 'Start on Act 1. The Resilience Contract is the spend boundary — try “Deny bad seller” to watch refuse-before-sign. Then Next through Status → Procure → Deny → Evidence.');
 const cards = Array.from(document.querySelectorAll('.card-flow .card'));
 const previousCard = document.getElementById('previousCard');
 const nextCard = document.getElementById('nextCard');
@@ -307,6 +310,9 @@ function showCard(index, moveFocus = false, updateHash = true) {
     heading.tabIndex = -1;
     heading.focus();
   }
+  const id = cards[currentCard].id;
+  if (id === 'status') void refreshStatus();
+  if (id === 'evidence') void loadEvidence();
 }
 
 previousCard.addEventListener('click', () => showCard(currentCard - 1, true));
@@ -339,6 +345,66 @@ function showTimeline(rows) {
   }
 }
 
+async function loadPolicy() {
+  if (hostedPreview) {
+    els.spentStat.textContent = 'n/a';
+    els.remainStat.textContent = 'n/a';
+    els.ensStat.textContent = 'preview';
+    return;
+  }
+  try {
+    const res = await fetch('/api/policy', { cache: 'no-store' });
+    if (!res.ok) throw new Error('policy unavailable');
+    const data = await res.json();
+    document.getElementById('allowlist').value = (data.allowlist || []).join(', ');
+    document.getElementById('maxPayment').value = data.maxPaymentTinybars || '10000';
+    document.getElementById('budget').value = data.totalBudgetTinybars || '500000';
+    els.spentStat.textContent = data.alreadySpentTinybars || '0';
+    els.remainStat.textContent = data.remainingTinybars || '0';
+    els.ensStat.textContent = data.ens || '—';
+  } catch {
+    els.spentStat.textContent = '?';
+    els.remainStat.textContent = '?';
+    els.ensStat.textContent = '?';
+  }
+}
+
+async function runPolicyDemo(mode) {
+  const buttons = document.querySelectorAll('[data-policy-mode]');
+  buttons.forEach((b) => { b.disabled = true; });
+  setVerdict(els.policyVerdict, 'run', 'Evaluating Resilience Contract…');
+  els.policySteps.replaceChildren();
+  try {
+    if (hostedPreview) throw new Error('Policy demo needs the local console backend.');
+    const res = await fetch('/api/policy-demo', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        mode,
+        allowlist: document.getElementById('allowlist').value,
+        maxPaymentTinybars: document.getElementById('maxPayment').value,
+        totalBudgetTinybars: document.getElementById('budget').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    renderSteps(els.policySteps, data.steps || []);
+    setVerdict(els.policyVerdict, data.approved ? 'ok' : 'bad', data.verdict);
+    coach(data.approved
+      ? `Act 1 result: policy would APPROVE paying ${data.attempt.amountTinybars} tinybars to ${data.attempt.payTo}. Nothing was signed — continue to Act 2/3 for live rails.`
+      : `Act 1 result: ${data.denyReason}. Refuse before sign — this is the Resilience Contract protecting the spend key.`);
+  } catch (e) {
+    setVerdict(els.policyVerdict, 'bad', String(e.message || e));
+    coach('Act 1 could not reach /api/policy-demo. Is `pnpm web:dev` running against the local backend?');
+  } finally {
+    buttons.forEach((b) => { b.disabled = false; });
+  }
+}
+
+document.querySelectorAll('[data-policy-mode]').forEach((button) => {
+  button.addEventListener('click', () => { void runPolicyDemo(button.dataset.policyMode); });
+});
+
 async function refreshStatus() {
   const button = document.getElementById('refreshButton');
   if (hostedPreview) {
@@ -351,53 +417,88 @@ async function refreshStatus() {
   button.disabled = true;
   try {
     const res = await fetch('/api/status');
-    if (!res.ok) throw new Error('Gateway status unavailable');
+    if (!res.ok) throw new Error('Gateway status unavailable — start pnpm gateway:live');
     const data = await res.json();
     const snap = data.status || {};
-    els.active.textContent = snap.active || 'unknown';
+    els.active.textContent = `active · ${snap.active || 'unknown'}`;
     els.gatewayUrl.textContent = data.gatewayUrl || 'unknown';
+    els.providerGrid.replaceChildren();
     if (Array.isArray(snap.providers)) {
+      for (const p of snap.providers) {
+        const item = document.createElement('div');
+        item.className = `step ${p.healthy ? 'pass' : 'fail'}`;
+        item.innerHTML = `<strong>${p.id}</strong><div>${p.healthy ? 'healthy' : 'unhealthy'} · failures ${p.consecutiveFailures ?? 0} · ${p.latencyMs ?? 'n/a'}ms</div><span class="adds">Fast plane provider — no payment required</span>`;
+        els.providerGrid.append(item);
+      }
       showTimeline(snap.providers.map(p => ({
         title: p.id,
         ok: Boolean(p.healthy),
         detail: `Healthy: ${p.healthy} · failures: ${p.consecutiveFailures ?? 0} · latency: ${p.latencyMs ?? 'n/a'}ms`,
       })));
+      coach(`Act 2: gateway active=${snap.active}. Fast plane is ${snap.redundancy ? 'redundant' : 'single-path'}.`);
     } else {
       showTimeline([{ title: 'No provider data yet', ok: false }]);
     }
   } catch (e) {
     els.active.textContent = 'error';
     showTimeline([{ title: 'Unable to reach gateway', ok: false, detail: String(e) }]);
+    coach('Act 2 cannot reach the gateway. Run `pnpm gateway:live` then Refresh status.');
   } finally {
     button.disabled = false;
   }
 }
 
 async function runScenario(kind) {
+  const stepsEl = kind === 'deny' ? els.denySteps : els.procureSteps;
+  const verdictEl = kind === 'deny' ? els.denyVerdict : els.procureVerdict;
   const target = kind === 'deny' ? els.denyOutput : els.procureOutput;
   const button = document.getElementById(kind === 'deny' ? 'denyButton' : 'procureButton');
   if (hostedPreview) {
-    target.textContent = 'This scenario runs in the local NeverDown backend.';
+    setVerdict(verdictEl, 'bad', 'This scenario runs in the local NeverDown backend.');
     return;
   }
   button.disabled = true;
-  target.textContent = 'Running scenario...';
+  setVerdict(verdictEl, 'run', `Running ${kind} scenario…`);
+  stepsEl.replaceChildren();
+  target.hidden = true;
   try {
     const res = await fetch('/api/run-agent', { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ scenario: kind }) });
     const data = await res.json();
-    target.textContent = JSON.stringify(data.receipt || data, null, 2);
-    if (data.receipt) {
-      showTimeline((data.receipt.steps || []).map(step => ({ title: step.tool, ok: Boolean(step.ok), detail: step.error || (step.ok ? 'Passed' : 'Failed') })));
+    const receipt = data.receipt || null;
+    const steps = (receipt?.steps || []).map(step => ({
+      title: step.tool || step.name || 'step',
+      ok: Boolean(step.ok),
+      detail: step.error || (step.ok ? 'Passed' : 'Failed'),
+      adds: step.ok ? 'Agent tool inside policy bounds' : 'Stopped before unsafe settle',
+    }));
+    if (steps.length) renderSteps(stepsEl, steps);
+    else renderSteps(stepsEl, [{ title: 'Agent output', ok: res.ok, detail: data.mode || '', adds: 'See raw receipt below' }]);
+    const ok = Boolean(receipt?.success ?? (kind === 'deny' ? !receipt?.success : receipt?.success));
+    const denyOk = kind === 'deny' && receipt && receipt.success === false;
+    const procureOk = kind === 'procure' && receipt && receipt.success === true;
+    const good = kind === 'deny' ? denyOk || /DENY|allowlist|RECIPIENT/i.test(JSON.stringify(receipt || data)) : procureOk;
+    setVerdict(
+      verdictEl,
+      good ? 'ok' : 'bad',
+      kind === 'deny'
+        ? (good ? 'DENIED before settle — guardrail held' : 'Unexpected result — inspect steps')
+        : (good ? 'Procurement scenario completed' : 'Procurement did not succeed — inspect steps'),
+    );
+    target.hidden = false;
+    target.textContent = JSON.stringify(receipt || data, null, 2);
+    if (receipt?.steps) {
+      showTimeline(receipt.steps.map(step => ({ title: step.tool, ok: Boolean(step.ok), detail: step.error || (step.ok ? 'Passed' : 'Failed') })));
     }
+    coach(kind === 'deny'
+      ? `Act 4 finished (${data.mode}). Look for a denial reason and confirm no settlement id.`
+      : `Act 3 finished (${data.mode}). Hermetic means no HBAR moved; live mode settles on Hedera.`);
   } catch (e) {
+    setVerdict(verdictEl, 'bad', String(e));
+    target.hidden = false;
     target.textContent = 'Error: ' + e;
   } finally {
     button.disabled = false;
   }
-}
-
-function runDeny() {
-  runScenario('deny');
 }
 
 async function loadEvidence() {
@@ -439,10 +540,13 @@ async function loadEvidence() {
       }
       box.append(row);
     }
+    coach('Act 5: open HashScan and ENS links for judges. These IDs may be from the latest settle in docs/LIVE-EVIDENCE.md.');
   } catch (e) {
     box.textContent = 'Unable to load evidence: ' + e;
   }
 }
+
+void loadPolicy();
 
 const themeToggleButton = document.getElementById('themeToggle');
 const themeCurtain = document.getElementById('themeCurtain');

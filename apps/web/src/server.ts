@@ -3,8 +3,10 @@ import { spawn } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { join, resolve, extname, sep } from "node:path";
 import { IncidentLedger } from "../../../packages/core/src/agent/coordinator.js";
-import { getGatewayStatus } from "@neverdown/sdk/status";
+import { getGatewayStatus } from "../../../packages/sdk/src/status.js";
 import { evidenceResponse } from "./evidence.js";
+import { parsePolicyDemoBody, policySnapshot, runPolicyDemo } from "./policyDemo.js";
+import { streamAgentChat } from "./agentChat.js";
 
 const PORT = Number(process.env.WEB_PORT ?? 3000);
 const GATEWAY_URL = (process.env.GATEWAY_URL?.trim() || "http://localhost:8787").replace(/\/$/, "");
@@ -63,6 +65,25 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, pathname: st
       topicId: process.env.HEDERA_TOPIC_ID || "",
       note: "Live IDs from docs/LIVE-EVIDENCE.md — refresh after each settle",
     });
+    return;
+  }
+
+  if (pathname === "/api/policy" && req.method === "GET") {
+    send(res, 200, policySnapshot(process.env, ROOT));
+    return;
+  }
+
+  if (pathname === "/api/policy-demo" && req.method === "POST") {
+    const body = await readBody(req);
+    const input = parsePolicyDemoBody(body && typeof body === "object" ? body : {}, process.env, ROOT);
+    send(res, 200, runPolicyDemo(input));
+    return;
+  }
+
+  if (pathname === "/api/agent-chat" && req.method === "POST") {
+    const body = await readBody(req);
+    const question = typeof body?.question === "string" ? body.question : "";
+    await streamAgentChat({ res, question, gatewayUrl: GATEWAY_URL, root: ROOT });
     return;
   }
 

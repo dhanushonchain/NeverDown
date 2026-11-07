@@ -1,0 +1,27 @@
+{
+  "name": "@neverdown/sdk-consumer-example",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Separate example app that consumes @neverdown/sdk (not part of the NeverDown product console)",
+  "type": "module",
+  "scripts": {
+    "ui": "node --import tsx src/ui-server.ts",
+    "procure": "node --import tsx src/procure.ts",
+    "deny": "node --import tsx src/deny.ts",
+    "features": "node --import tsx src/feature-matrix.ts",
+    "features:procure": "node --import tsx src/feature-matrix.ts --procure",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "echo \"ok\""
+  },
+  "dependencies": {
+    "@neverdown/sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

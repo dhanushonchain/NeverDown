@@ -32,8 +32,14 @@
     "coordinator:live": "node scripts/run-with-env.mjs agent scripts/incident-coordinator.ts",
     "web:dev": "pnpm --filter @neverdown/web dev",
     "test:core": "pnpm --filter @neverdown/core test",
+    "test:sdk": "pnpm --filter @neverdown/sdk test",
     "test:sellers": "pnpm --filter @neverdown/sellers test",
-    "test:gateway": "pnpm --filter @neverdown/gateway test"
+    "test:gateway": "pnpm --filter @neverdown/gateway test",
+    "sdk-consumer:ui": "node scripts/run-with-env.mjs agent examples/neverdown-sdk-consumer/src/ui-server.ts",
+    "sdk-consumer:procure": "node scripts/run-with-env.mjs agent examples/neverdown-sdk-consumer/src/procure.ts",
+    "sdk-consumer:deny": "node scripts/run-with-env.mjs agent examples/neverdown-sdk-consumer/src/deny.ts",
+    "sdk-consumer:features": "node scripts/run-with-env.mjs agent examples/neverdown-sdk-consumer/src/feature-matrix.ts",
+    "sdk-consumer:features:procure": "node scripts/run-with-env.mjs agent examples/neverdown-sdk-consumer/src/feature-matrix.ts --procure"
   },
   "devDependencies": {
     "tsx": "^4.20.0"
