@@ -39,11 +39,16 @@
     .theme-curtain.rising { transform-origin:bottom; transform:scaleY(0); transition:transform 550ms cubic-bezier(.76,0,.24,1); }
     .eyebrow { display:block; color:var(--muted); font-size:.76rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
     .hero { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(350px,.8fr); gap:clamp(32px,6vw,90px); align-items:center; min-height:630px; padding-top:56px; padding-bottom:72px; }
-    .hero h1 { max-width:780px; margin:0 0 24px; font-size:clamp(3rem,6.2vw,6rem); font-weight:700; letter-spacing:-.06em; line-height:.99; }
+    .hero > * { min-width:0; }
+    .hero h1 { max-width:780px; margin:14px 0 24px; font-size:clamp(3rem,6.2vw,6rem); font-weight:700; letter-spacing:-.06em; line-height:.99; }
     .hero h1 em { font-style:italic; }
     .hero-copy { max-width:600px; margin:0; color:var(--muted); font-size:clamp(1.05rem,1.55vw,1.28rem); line-height:1.55; }
+    .hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:30px; }
     .button { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:11px 18px; border-radius:10px; text-decoration:none; font-weight:700; }
     .button-primary { background:var(--text); color:var(--bg); }
+    .button-outline { border:1px solid var(--line); }
+    .button-outline:hover { background:var(--surface); }
+    .button:active, .header-link:active { transform:translateY(1px); }
     .hero-note { margin:22px 0 0; color:var(--muted); font-size:.86rem; }
     .operator-card { min-width:0; padding:26px; border:1px solid var(--panel-line); border-radius:20px; background:var(--panel); color:var(--panel-text); box-shadow:0 22px 48px -26px rgba(31,22,24,.55); }
     .operator-head { display:flex; justify-content:space-between; gap:16px; align-items:start; padding-bottom:22px; border-bottom:1px solid var(--panel-line); }
@@ -79,12 +84,13 @@
     .scope-row strong { font-size:1.08rem; }
     .scope-row span { color:var(--muted); font-size:.85rem; white-space:nowrap; }
     .last-section { padding-bottom:100px; }
-    .last-section .section-heading { max-width:none; font-size:clamp(.95rem,3.5vw,3rem); letter-spacing:-.05em; white-space:nowrap; }
+    .last-section .section-heading { max-width:none; font-size:clamp(1.8rem,3.5vw,3rem); letter-spacing:-.05em; }
     .site-footer { display:flex; justify-content:space-between; gap:24px; padding-top:26px; padding-bottom:32px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
     .site-footer p { margin:0; }
     .site-footer a:hover { color:var(--text); }
-    @media (max-width:1000px) { .hero { grid-template-columns:1fr; min-height:0; gap:44px; } .operator-card { max-width:640px; } .process { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:32px; } .process article:nth-child(3) { padding-left:0; border-left:0; } }
-    @media (max-width:700px) { .shell { padding-left:16px; padding-right:16px; } .site-header { gap:14px; } .site-nav { display:none; } .header-actions { margin-left:auto; gap:8px; } .header-link { padding:8px 10px; } .brand span { display:none; } .hero { padding-top:44px; padding-bottom:68px; } .hero h1 { font-size:clamp(2.7rem,13vw,4.6rem); } .two-planes, .scope { grid-template-columns:1fr; } .section { padding:64px 0; } .process { grid-template-columns:1fr; row-gap:0; } .process article, .process article + article, .process article:nth-child(3) { padding:18px 0; border-left:0; border-top:1px solid var(--line); } .process { border-top:0; } .process h3 { margin:12px 0 8px; } .site-footer { display:block; } .site-footer p + p { margin-top:10px; } }
+    @media (min-width:1001px) { .last-section .section-heading { white-space:nowrap; } }
+    @media (max-width:1000px) { .hero { grid-template-columns:minmax(0,1fr); min-height:0; gap:44px; } .operator-card { max-width:640px; } .process { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:32px; } .process article:nth-child(3) { padding-left:0; border-left:0; } }
+    @media (max-width:700px) { .shell { padding-left:16px; padding-right:16px; } .site-header { flex-wrap:wrap; gap:0; padding-top:10px; } .site-nav { order:3; width:100%; display:flex; justify-content:space-between; gap:12px; margin-left:0; overflow-x:auto; } .site-nav a { font-size:.8rem; } .header-actions { margin-left:auto; gap:8px; } .header-link { padding:8px 10px; } .brand span { display:none; } .hero { padding-top:44px; padding-bottom:68px; } .hero h1 { font-size:clamp(2.55rem,11vw,4.6rem); overflow-wrap:break-word; } .two-planes, .scope { grid-template-columns:1fr; } .section { padding:64px 0; } .process { grid-template-columns:1fr; row-gap:0; } .process article, .process article + article, .process article:nth-child(3) { padding:18px 0; border-left:0; border-top:1px solid var(--line); } .process { border-top:0; } .process h3 { margin:12px 0 8px; } .site-footer { display:block; } .site-footer p + p { margin-top:10px; } }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .theme-curtain.falling, .theme-curtain.rising { transition:none; } }
   </style>
 </head>
@@ -112,8 +118,13 @@
 <main>
   <section class="hero shell" aria-labelledby="hero-title">
     <div>
+      <span class="eyebrow">NeverDown / programmable resilience</span>
       <h1 id="hero-title">When a service fails, <em>your app</em> keeps going.</h1>
       <p class="hero-copy">Define what NeverDown may do before a dependency breaks. It switches to an approved standby first, then finds and verifies replacement capacity under your policy.</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="/console.html">Open console ↗</a>
+        <a class="button button-outline" href="/sdk.html">See SDK example ↗</a>
+      </div>
     </div>
     <div class="operator-card" aria-label="Example recovery sequence">
       <div class="operator-head">
