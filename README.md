@@ -4,6 +4,9 @@
 
 **ETHGlobal Mumbai 2026** · Repo: [github.com/dhanushonchain/NeverDown](https://github.com/dhanushonchain/NeverDown)
 
+> 🎥 **Watch the Demo:**  
+> 🌐 **Live Console:** (https://getneverdown.vercel.app/)
+
 > Pick any failure spot in your stack. Program what NeverDown should do. Policy lives in a **Resilience Contract**. When that spot breaks, NeverDown recovers and — if needed — discovers, pays for, and installs a replacement, with proof.
 
 NeverDown is a B2B **programmable resilience operator** for live dApps: **monitor → investigate → procure → recover → verify → audit**, inside explicit spend and action limits.
