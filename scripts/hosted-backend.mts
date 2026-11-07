@@ -5,26 +5,30 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import { createGatewayApp } from "../apps/gateway/src/app.js";
 import { loadGatewayConfig } from "../apps/gateway/src/config.js";
 import { IncidentCoordinator, IncidentLedger, type GatewayIncidentSnapshot } from "../packages/core/src/agent/coordinator.js";
+import { PostgresIncidentLedger } from "../packages/core/src/agent/postgresIncidentLedger.js";
 import { createLiveToolBelt, runAgentScenario } from "../packages/core/src/agent/index.js";
 
 const signingKeys = ["HEDERA_SPEND_KEY", "HEDERA_OPERATOR_KEY"];
 const forbiddenParentKeys = [...signingKeys, "ARKIV_PRIVATE_KEY", "RECLAIM_PRIVATE_KEY", "ENS_OWNER_PRIVATE_KEY"];
 
 function prepareWorkerFile(): void {
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  if (process.env.DYNO && !databaseUrl) throw new Error("DATABASE_URL is required on Heroku");
   const dataDir = process.env.NEVERDOWN_DATA_DIR?.trim();
-  if (dataDir) {
+  if (dataDir && !databaseUrl) {
     if (!isAbsolute(dataDir)) throw new Error("NEVERDOWN_DATA_DIR must be absolute");
     process.env.POLICY_DB_PATH = join(dataDir, "neverdown-policy.sqlite");
     process.env.INCIDENT_DB_PATH = join(dataDir, "neverdown-incidents.sqlite");
     process.env.PAYMENT_WORKER_ENV_FILE = join(dataDir, "worker.env");
   }
+  if (databaseUrl && !process.env.PAYMENT_WORKER_ENV_FILE) process.env.PAYMENT_WORKER_ENV_FILE = join("/tmp", "neverdown-worker.env");
   const file = process.env.PAYMENT_WORKER_ENV_FILE?.trim();
   if (!file) throw new Error("PAYMENT_WORKER_ENV_FILE is required");
   if (dataDir && signingKeys.some((key) => !process.env[key])) throw new Error("hosted signing credentials are required on every start");
   if (signingKeys.some((key) => process.env[key])) {
     const lines: string[] = [];
     for (const [key, value] of Object.entries(process.env)) {
-      if (!/^(HEDERA_|POLICY_|HCS_|X402_)/.test(key) && key !== "SELLER_URL" && key !== "ENS_ALLOWLIST_NAMES") continue;
+      if (!/^(HEDERA_|POLICY_|HCS_|X402_)/.test(key) && key !== "SELLER_URL" && key !== "ENS_ALLOWLIST_NAMES" && key !== "DATABASE_URL") continue;
       if (value === undefined) continue;
       if (/[\r\n]/.test(value)) throw new Error(`${key} contains a newline`);
       lines.push(`${key}=${value}`);
@@ -51,9 +55,15 @@ async function main(): Promise<void> {
   const gatewayUrl = `http://127.0.0.1:${port}`;
   const config = loadGatewayConfig({ ...process.env, GATEWAY_PORT: String(port) });
   const { app, controller } = createGatewayApp({ config });
-  const incidentPath = resolve(process.env.INCIDENT_DB_PATH?.trim() || "neverdown-incidents.sqlite");
-  mkdirSync(dirname(incidentPath), { recursive: true });
-  const ledger = new IncidentLedger(incidentPath);
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  let ledger: IncidentLedger | PostgresIncidentLedger;
+  if (databaseUrl) ledger = new PostgresIncidentLedger(databaseUrl);
+  else {
+    const incidentPath = resolve(process.env.INCIDENT_DB_PATH?.trim() || "neverdown-incidents.sqlite");
+    mkdirSync(dirname(incidentPath), { recursive: true });
+    ledger = new IncidentLedger(incidentPath);
+  }
+  if (ledger instanceof PostgresIncidentLedger) await ledger.list(1);
   const tools = createLiveToolBelt({ ...process.env, GATEWAY_URL: gatewayUrl });
   const coordinator = new IncidentCoordinator(
     ledger,
@@ -84,7 +94,7 @@ async function main(): Promise<void> {
     closing = true;
     if (timer) clearInterval(timer);
     controller.stop();
-    server.close(() => { ledger.close(); process.exit(0); });
+    server.close(() => { void Promise.resolve(ledger.close()).finally(() => process.exit(0)); });
   };
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);

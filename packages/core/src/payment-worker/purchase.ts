@@ -3,7 +3,8 @@ import { loadHcsConfig } from "../hcs/config.js";
 import { authorizePurchase } from "../policy/engine.js";
 import type { PolicyConfig } from "../policy/types.js";
 import type { PurchaseOutcome } from "../policy/types.js";
-import { BudgetStore } from "../policy/budgetStore.js";
+import { BudgetStore, type BudgetLedger } from "../policy/budgetStore.js";
+import { PostgresBudgetStore } from "../policy/postgresBudgetStore.js";
 import { payForRpcOnce, payForRpcPack } from "../x402/payOnce.js";
 import type { PurchaseRequest } from "./protocol.js";
 import { createHederaX402HttpClient } from "../x402/client.js";
@@ -15,7 +16,7 @@ const HEDERA_ACCOUNT_ID = /^0\.0\.[1-9]\d*$/;
 
 export type PurchaseDeps = {
   policy: PolicyConfig;
-  store: BudgetStore;
+  store: BudgetLedger;
   audit?: { config?: ReturnType<typeof loadHcsConfig>; };
 
   // injectables for tests
@@ -37,7 +38,8 @@ function normalizeEndpoint(raw: string): string {
   return `${url.origin}${url.pathname.replace(/\/+$/, "")}`;
 }
 
-function openStore(env: NodeJS.ProcessEnv): BudgetStore {
+function openStore(env: NodeJS.ProcessEnv): BudgetLedger {
+  if (env.DATABASE_URL?.trim()) return new PostgresBudgetStore(env.DATABASE_URL.trim());
   const dbPath = env.POLICY_DB_PATH?.trim() || "neverdown-policy.sqlite";
   return new BudgetStore(dbPath);
 }
@@ -57,7 +59,7 @@ export function buildPurchaseDeps(env: NodeJS.ProcessEnv = process.env): Purchas
     throw new Error("HCS topic and operator credentials required for durable payment audit");
   }
   const store = openStore(env);
-  store.initializePolicy(policy.policyId, 0n);
+  if (store instanceof BudgetStore) store.initializePolicy(policy.policyId, 0n);
   let auditClient: any = undefined;
   if (hcsCfg) {
     const client = new HederaHcsClient(hcsCfg);
@@ -89,10 +91,10 @@ async function anchor(_env: NodeJS.ProcessEnv, deps: PurchaseDeps, id: string, p
   if (!cfg || !deps.auditClient) {
     return deps.audit?.config ? "failed" : "disabled";
   }
-  deps.store.enqueueOutbox({ id, purchaseId, policyId: policy.policyId, eventType, event, contentHash: hashCanonical(event), status: "pending", createdAt: new Date().toISOString() });
+  await deps.store.enqueueOutbox({ id, purchaseId, policyId: policy.policyId, eventType, event, contentHash: hashCanonical(event), status: "pending", createdAt: new Date().toISOString() });
   const result = await deps.auditClient.submit(event);
-  if (result.status === "published") deps.store.markOutboxAnchored(id, result.sequenceNumber, result.consensusTimestamp!);
-  else deps.store.markOutboxFailed(id, result.error ?? "HCS failed");
+  if (result.status === "published") await deps.store.markOutboxAnchored(id, result.sequenceNumber, result.consensusTimestamp!);
+  else await deps.store.markOutboxFailed(id, result.error ?? "HCS failed");
   return result.status as any;
 }
 
@@ -174,7 +176,7 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
   // no env unused placeholder
   const authAuditStatus = await anchor(process.env, deps, authId, request.purchaseId, policy, "PURCHASE_AUTHORIZED", authEvent);
   if ((process.env.HCS_AUDIT_AVAILABILITY?.trim().toUpperCase()||"REQUIRED_DURABLE")==="REQUIRED_DURABLE" && authAuditStatus !== "published" && deps.audit?.config) {
-    store.releaseOnPreSigningFailure(request.purchaseId, "audit failed");
+    await store.releaseOnPreSigningFailure(request.purchaseId, "audit failed");
     return { status: "RELEASED", purchaseId: request.purchaseId, denyReason: "AUDIT_UNAVAILABLE", message: "durable authorization audit failed", auditStatus: authAuditStatus } as any;
   }
 
@@ -183,18 +185,18 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
   const candidate = accepts.find((r: any) => hashCanonical(r) === authorization.selectedRequirementHash);
   const matching = accepts.filter((r: any) => r?.scheme === authorization.scheme && r?.network === authorization.network && r?.asset === authorization.asset && String(r?.payTo) === authorization.sellerPayTo && bigintStr(r?.amount) === authorization.amountTinybars.toString());
   if (!candidate || matching.length !== 1 || hashCanonical(matching[0]) !== authorization.selectedRequirementHash) {
-    store.releaseOnPreSigningFailure(request.purchaseId, "requirement changed");
+    await store.releaseOnPreSigningFailure(request.purchaseId, "requirement changed");
     return { status: "RELEASED", purchaseId: request.purchaseId, denyReason: "REQUIREMENT_CHANGED", message: "payment requirements changed", auditStatus: "disabled" } as any;
   }
 
   // 5) consume reservation right before signing
   try {
-    store.consumeForSigning(request.purchaseId, policy.policyId, authorization.sellerPayTo, authorization.amountTinybars, authorization.expiresAt);
+    await store.consumeForSigning(request.purchaseId, policy.policyId, authorization.sellerPayTo, authorization.amountTinybars, authorization.expiresAt);
   } catch (e) {
     const le = e as any;
     const code = typeof le?.code === "string" ? le.code : "NOT_RESERVED";
     // always attempt release
-    store.releaseOnPreSigningFailure(request.purchaseId, code);
+    await store.releaseOnPreSigningFailure(request.purchaseId, code);
     return { status: "DENIED", purchaseId: request.purchaseId, denyReason: code, message: le instanceof Error ? le.message : "claim failed", auditStatus: "disabled" };
   }
 
@@ -207,7 +209,7 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
       ? await payForRpcPack({ purchaseUrl, httpClient, fetchImpl, expectedChallenge: challenge })
       : await payForRpcOnce({ sellerUrl, httpClient, fetchImpl });
   } catch (e) {
-    store.markUncertain(request.purchaseId, e instanceof Error ? e.message : "unknown");
+    await store.markUncertain(request.purchaseId, e instanceof Error ? e.message : "unknown");
     const uncertainId = `outbox-${request.purchaseId}-UNCERTAIN`;
     const event = {
       schemaVersion: "nd-audit-v1", eventId: uncertainId, purchaseId: request.purchaseId, policyId: policy.policyId,
@@ -221,8 +223,8 @@ export async function runPurchase(env: NodeJS.ProcessEnv, deps: PurchaseDeps, cr
   }
 
   // 7) settle
-  store.setTransaction(request.purchaseId, result.transactionId);
-  const settled = store.markSettled(request.purchaseId, result.transactionId);
+  await store.setTransaction(request.purchaseId, result.transactionId);
+  const settled = await store.markSettled(request.purchaseId, result.transactionId);
   if (!settled) {
     // concurrency edge
   }

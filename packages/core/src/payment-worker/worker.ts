@@ -5,7 +5,7 @@ import { buildPurchaseDeps, loadCredentials } from "./purchase.js";
 import { parseWorkerRequestMessage, parseHelloMessage, PaymentWorkerError, isRecord } from "./protocol.js";
 
 async function recover(store: any) {
-  try { store.recoverAfterRestart?.(); } catch {}
+  try { await store.recoverAfterRestart?.(); } catch {}
 }
 
 export function createWorkerServer(deps: any, send: (msg: any) => void) {
@@ -63,7 +63,7 @@ export function createWorkerServer(deps: any, send: (msg: any) => void) {
 }
 
 let loadedCredentials: any;
-export function startWorker() {
+export async function startWorker() {
   const envFile = process.env.PAYMENT_WORKER_ENV_FILE;
   if (envFile) {
     try {
@@ -91,7 +91,8 @@ export function startWorker() {
   }
   const deps = buildPurchaseDeps(process.env);
   loadedCredentials = loadCredentials(process.env);
-  recover(deps.store);
+  await deps.store.initializePolicy(deps.policy.policyId, 0n);
+  await recover(deps.store);
   const server: any = createWorkerServer(deps, (msg) => {
     if (process.send) process.send(msg);
   });
@@ -100,4 +101,4 @@ export function startWorker() {
   return deps;
 }
 
-if (process.send) startWorker();
+if (process.send) void startWorker().catch(() => process.exit(1));

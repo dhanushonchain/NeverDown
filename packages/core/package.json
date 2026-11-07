@@ -4,10 +4,20 @@
   "description": "NeverDown policy, agent, Arkiv, ENS, x402, HCS, PoC (C2–C8)",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/dhanushonchain/NeverDown.git", "directory": "packages/core" },
-  "engines": { "node": ">=22.13.0" },
-  "files": ["dist"],
-  "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dhanushonchain/NeverDown.git",
+    "directory": "packages/core"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -30,10 +40,12 @@
     "@x402/core": "2.30.0",
     "@x402/hedera": "2.30.0",
     "ethers": "^6.17.0",
+    "pg": "^8.23.1",
     "viem": "^2.57.16"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
   }

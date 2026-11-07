@@ -5,6 +5,12 @@ export type IncidentStatus = "STARTED" | "RETRYABLE" | "COMPLETED" | "FAILED" | 
 export type IncidentRecord = { incidentId: string; eventId: string; status: IncidentStatus; attempts: number; nextRetryAt: number | null; createdAt: string; updatedAt: string; receipt: unknown | null };
 export type GatewayIncidentSnapshot = { runtimeId: string; recentEvents: Array<{ id: string; incidentId: string; reason: string; newActive: string | null }> };
 export type ProcureResult = { success: boolean; purchase?: { status?: string } | null; steps?: Array<{ tool: string; ok: boolean; error?: string }> };
+export type IncidentStore = {
+  claim(incidentId: string, eventId: string): boolean | Promise<boolean>;
+  finish(incidentId: string, status: Exclude<IncidentStatus, "STARTED">, receipt: unknown): void | Promise<void>;
+  get(incidentId: string): IncidentRecord | undefined | Promise<IncidentRecord | undefined>;
+  close(): void | Promise<void>;
+};
 
 export class IncidentLedger {
   private readonly db: DatabaseSync;
@@ -50,7 +56,7 @@ export class IncidentLedger {
 
 export class IncidentCoordinator {
   private polling = false;
-  constructor(private readonly ledger: IncidentLedger, private readonly fetchStatus: () => Promise<GatewayIncidentSnapshot>, private readonly procure: (incidentId: string) => Promise<ProcureResult>) {}
+  constructor(private readonly ledger: IncidentStore, private readonly fetchStatus: () => Promise<GatewayIncidentSnapshot>, private readonly procure: (incidentId: string) => Promise<ProcureResult>) {}
 
   async poll(): Promise<void> {
     if (this.polling) return;
@@ -60,14 +66,14 @@ export class IncidentCoordinator {
       try { snapshot = await this.fetchStatus(); } catch { return; }
       for (const event of snapshot.recentEvents ?? []) {
         if (event.reason !== "failover completed" || event.newActive !== "standby" || !event.incidentId.startsWith(`${snapshot.runtimeId}:`)) continue;
-        if (!this.ledger.claim(event.incidentId, event.id)) continue;
+        if (!await this.ledger.claim(event.incidentId, event.id)) continue;
         try {
           const receipt = await this.procure(event.incidentId);
           const retryDiscovery = !receipt.purchase && receipt.steps?.some((step) => step.tool === "discover_offers" && !step.ok && !!step.error);
           const status: Exclude<IncidentStatus, "STARTED"> = receipt.purchase?.status === "UNCERTAIN" ? "UNCERTAIN" : receipt.success ? "COMPLETED" : retryDiscovery ? "RETRYABLE" : "FAILED";
-          this.ledger.finish(event.incidentId, status, receipt);
+          await this.ledger.finish(event.incidentId, status, receipt);
         } catch {
-          this.ledger.finish(event.incidentId, "UNCERTAIN", { success: false, notes: ["procurement interrupted; reconcile before retry"] });
+          await this.ledger.finish(event.incidentId, "UNCERTAIN", { success: false, notes: ["procurement interrupted; reconcile before retry"] });
         }
       }
     } finally { this.polling = false; }

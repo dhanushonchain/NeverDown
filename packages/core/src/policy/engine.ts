@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 
 import type { PolicyConfig } from "./types.js";
 import type { AuthorizationRecord, PolicyDecision } from "./types.js";
-import { BudgetStore } from "./budgetStore.js";
+import type { BudgetLedger } from "./budgetStore.js";
 import type { PaymentRequired } from "@x402/core/types";
 
 function canonicalSorted(input: unknown): string {
@@ -24,7 +24,7 @@ function bigintStringOk(v: unknown): v is string {
 export type PolicyEvaluationInput = {
   policy: PolicyConfig;
   paymentRequirements: PaymentRequired;
-  store: BudgetStore;
+  store: BudgetLedger;
   serviceId: string;
   endpoint?: string;
   sellerEnsName?: string;
@@ -46,8 +46,8 @@ export async function authorizePurchase(input: PolicyEvaluationInput): Promise<P
   const policy = input.policy;
 
   // Duplicate/replay protection
-  input.store.initialize(policy.policyId, 0n);
-  const existing = input.store.get(input.purchaseId);
+  await input.store.initialize(policy.policyId, 0n);
+  const existing = await input.store.get(input.purchaseId);
   if (existing) {
     return { approved: false, denyReason: "DUPLICATE_PURCHASE_ID", message: "purchase_id already exists" };
   }
@@ -115,14 +115,14 @@ export async function authorizePurchase(input: PolicyEvaluationInput): Promise<P
     }
   }
 
-  const totalCommitted = input.store.totalCommittedOrReserved(policy.policyId);
+  const totalCommitted = await input.store.totalCommittedOrReserved(policy.policyId);
   if (totalCommitted + amount > policy.totalBudgetTinybars) {
     return { approved: false, denyReason: "BUDGET_EXCEEDED", message: "cumulative budget exceeded" };
   }
 
   // Atomic reserve
   try {
-    input.store.reserveAtomic(input.purchaseId, policy.policyId, candidate.payTo, amount, policy.totalBudgetTinybars, policy.maxPerPaymentTinybars);
+    await input.store.reserveAtomic(input.purchaseId, policy.policyId, candidate.payTo, amount, policy.totalBudgetTinybars, policy.maxPerPaymentTinybars);
   } catch (e) {
     const message = e instanceof Error ? e.message : "reservation failed";
     if (message.includes("cumulative")) return { approved: false, denyReason: "BUDGET_EXCEEDED", message };
@@ -149,10 +149,7 @@ export async function authorizePurchase(input: PolicyEvaluationInput): Promise<P
     x402PaymentRequiredHash: hashJson(input.paymentRequirements),
     idempotencyKey: crypto.randomUUID(),
   };
-  input.store.saveAuthorization(record);
-  input.store.transition(input.purchaseId, "AUTHORIZED" as any, undefined);
-  // Our state label approved means RESERVED anyway. Ensure state
-  input.store.transition(input.purchaseId, "RESERVED", "authorized");
+  await input.store.saveAuthorization(record);
 
   return { approved: true, authorization: record };
 }

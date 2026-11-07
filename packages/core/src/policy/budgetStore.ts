@@ -18,6 +18,12 @@ export class LedgerError extends Error {
   readonly code: string;
   constructor(code: string, message: string) { super(message); this.name="LedgerError"; this.code=code; }
 }
+export type MaybePromise<T> = T | Promise<T>;
+export type BudgetLedger = {
+  [K in keyof BudgetStore]: BudgetStore[K] extends (...args: infer A) => infer R
+    ? (...args: A) => MaybePromise<R>
+    : BudgetStore[K];
+};
 export class BudgetStore {
   private db: DatabaseSync;
 
