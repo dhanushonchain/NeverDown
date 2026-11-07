@@ -1,5 +1,6 @@
 {
   "name": "@neverdown/web",
+  "type": "module",
   "private": true,
   "version": "0.0.0",
   "description": "NeverDown console + five-act demo UI (C9)",
