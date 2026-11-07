@@ -1,5 +1,23 @@
 # Live acceptance evidence
 
+## SDK and failover acceptance (2026-11-07 IST)
+
+The SDK's `NeverDown.procure` path settled one capped Hedera testnet purchase against the live Heroku seller and installed its RPC URL into a fresh, isolated gateway process. The gateway process was closed after the check; this was an acceptance run, not a persistent deployment.
+
+| Item | Verified result |
+|---|---|
+| SDK read side | `pnpm sdk:smoke` passed for `neverdownseller.eth` and Arkiv offer `0x40edb65031b38fb0119d8e424026711046bb2d9d99914747cf6e9d82eb94e392` |
+| Preflight | ENS, Arkiv, independent PoC, seller 402 challenge, and gateway status passed without payment |
+| Initial policy denial | Incident `sdk-live:cc28a91c-b965-4053-a008-d650f1731d8c` used an unapproved service ID; worker returned `SERVICE_NOT_ALLOWED`, HCS sequence 19 recorded `PURCHASE_DENIED`, and no settle was requested |
+| Successful SDK purchase | Incident `sdk-live:da7a73a8-5fca-48a3-9563-0c9b61b85ee9` used the configured policy service; SDK returned `SETTLED`, `installed: true`, and `auditStatus: published` |
+| Hedera settlement | `0.0.9185802@1794012832.191533103`; testnet Mirror Node independently returned `SUCCESS` / `CRYPTOTRANSFER` |
+| HashScan | https://hashscan.io/testnet/transaction/0.0.9185802%401794012832.191533103 |
+| HCS audit | Topic `0.0.11328605`, sequence 20 `PURCHASE_AUTHORIZED` and 21 `PAYMENT_SETTLED` for the same SDK incident; checked via testnet Mirror Node |
+| Gateway install | SDK receipt reported `installed: true`; the fresh gateway's standby URL matched the purchased RPC endpoint |
+| Live failover | `pnpm failover:live` used the configured Sepolia providers behind a local primary outage proxy. With no agent or payment, the gateway switched from primary to standby and served `eth_chainId=0xaa36a7` and `eth_blockNumber`. This verifies a controlled primary outage, not a naturally occurring upstream outage. |
+
+The existing process on port 8787 returned 404 for the SDK's authenticated `/_internal/ready` check, so the SDK acceptance used a fresh gateway running current code. Restart long-running gateways after deploying the SDK readiness route.
+
 ## Current run (2026-11-07 IST)
 
 The live RPC demo procurement flow completed against the Heroku seller. This is one demo adapter for NeverDown's broader resilience operator.
@@ -17,7 +35,7 @@ The live RPC demo procurement flow completed against the Heroku seller. This is 
 
 An earlier attempt on the same day settled at `0.0.9185802@1794002179.716711625` but installation failed because an older gateway process had its internal API disabled. The gateway was restarted with current configuration before the successful second purchase. The first payment is real and must not be reported as a completed install.
 
-A live primary outage was not induced. Gateway failover and paid standby routing passed 19 hermetic gateway tests; the live run verified procurement and installation while the primary remained healthy.
+The earlier purchase run did not induce a primary outage. The later controlled live failover above used an isolated gateway and local outage proxy; it did not reuse the paid standby installed in the earlier run.
 
 ## Earlier run (2026-11-06)
 

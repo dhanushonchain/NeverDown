@@ -42,7 +42,9 @@ Use separate terminals for long-running services. Each command reads the same ro
 
 The C3 security gate remains **PARTIAL**: worker secrets and SQLite files are readable by processes under the same OS user. The public probe limit is per seller process. Merchant entitlements are bounded by time and request count, and require persistent SQLite. An incident interrupted after claiming remains `STARTED` until manually reconciled. The live testnet transaction and its evidence IDs must be recorded after a configured run; do not infer them from hermetic tests.
 
-## Current local acceptance state (2026-11-06)
+## Historical local acceptance state (2026-11-06)
+
+For the later on-chain ENS, SDK purchase, and controlled failover results, see [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md).
 
 The 2026-11-06 acceptance run used separate local env profiles, since consolidated into root `.env`. Seller `/probe` and gateway `/ready` both answered Sepolia (`0xaa36a7`). `pnpm ens:check`, `pnpm arkiv:query` (v2 offer for `neverdown.eth`), and `pnpm preflight:live` passed. `pnpm agent:live` settled on Hedera testnet:
 

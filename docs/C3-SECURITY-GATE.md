@@ -3,7 +3,7 @@
 **Read this before touching** `packages/core/src/policy/`, `hcs/`, `payment-worker/`, or C8 live `request_purchase`.
 
 **Verdict:** PARTIAL (best-effort process boundary; not OS-enforced isolation).  
-**C8 readiness:** Worker handoff is wired; live testnet acceptance and OS-enforced separation remain open.
+**C8 readiness:** Worker handoff and live testnet settlement have been verified; OS-enforced separation remains open. See [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md).
 
 Related: [C3-POLICY-HCS.md](./C3-POLICY-HCS.md) · [C8-AGENT.md](./C8-AGENT.md)
 
@@ -98,11 +98,11 @@ Secrets live on disk in root `.env` (`PAYMENT_WORKER_ENV_FILE`). Not a vault / K
 
 Happy-path + replay + unsafe file mode are covered. Coverage for corrupted challenges, truncated IPC frames, and weird extra fields is still **minimal**. Prefer adding tests in `paymentWorkerIpc.test.ts` / protocol unit tests before claiming a stronger gate.
 
-### 5. C8 live worker path (not yet live-verified)
+### 5. C8 live worker path (verified; hardening remains)
 
 Hermetic C8 is fine (mocked tools).
 
-**Live** [`createLiveToolBelt`](../packages/core/src/agent/tools.ts) now sends selected offer terms to the payment worker and requires a `SETTLED` outcome plus a credential before standby installation. The deny demonstration still evaluates policy in-process without signing. Hermetic IPC tests pass, but a configured Hedera testnet transaction through the full agent path has not been verified.
+**Live** [`createLiveToolBelt`](../packages/core/src/agent/tools.ts) sends selected offer terms to the payment worker and requires a `SETTLED` outcome plus a credential before standby installation. The deny demonstration evaluates policy in-process without signing. Hermetic IPC tests pass. Agent and SDK purchases were later verified on Hedera testnet; see [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md). This does not change the PARTIAL isolation verdict.
 
 For live operation:
 
@@ -133,10 +133,10 @@ See [`.env.example`](../.env.example).
 3. If you touch `canonicalize` / `hashCanonical`, keep bigint-safe behavior and add a regression test.
 4. If you change purchase auth, keep duplicate-`purchaseId` deny and worker IPC tests green.
 5. Document any new residual risk here — do not silently claim FULL isolation.
-6. Next product chunk remains **C9 UI**; security hardening is a **rail fix**, not a reason to rebuild C0–C7.
+6. Security hardening is a **rail fix**, not a reason to rebuild C0–C7.
 
 ---
 
 ## Short status line (copy into chat handoffs)
 
-> C3 BigInt hash bug fixed; payment worker IPC + security surface tests green; live C8 purchase now uses worker IPC. Verdict PARTIAL (same-OS-user DB/cred file; file-based secrets; full live testnet acceptance pending).
+> C3 BigInt hash bug fixed; payment worker IPC + security surface tests green; live agent and SDK purchases verified on Hedera testnet. Verdict PARTIAL (same-OS-user DB/cred file; file-based secrets).

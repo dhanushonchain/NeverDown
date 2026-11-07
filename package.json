@@ -18,6 +18,8 @@
     "arkiv:query": "node scripts/run-with-env.mjs agent scripts/query-arkiv.ts",
     "ens:check": "node scripts/run-with-env.mjs agent scripts/check-ens.ts",
     "sdk:smoke": "node scripts/run-with-env.mjs agent scripts/sdk-smoke.mts",
+    "sdk:live": "node scripts/run-with-env.mjs agent scripts/sdk-live-acceptance.mts",
+    "failover:live": "node scripts/run-with-env.mjs agent scripts/live-failover-acceptance.mts",
     "ens:set-texts": "node scripts/run-with-env.mjs ens-set-texts scripts/set-ens-texts.ts",
     "preflight:live": "node scripts/run-with-env.mjs agent scripts/live-preflight.ts",
     "seller:live": "node scripts/run-with-env.mjs seller apps/sellers/src/server.ts",

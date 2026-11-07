@@ -1,6 +1,6 @@
 # NeverDown SDK — phased plan
 
-**Implementation status (2026-11-07):** S0–S3 and S4 packaging are implemented in separate commits. `@neverdown/core` and `@neverdown/sdk` build and pack as Node packages; an external consumer installed both tarballs and passed a live read-only ENS → Arkiv → capability check. The packages are **not published to npm**. The SDK also includes an in-process failure spot monitor for dApp probes and explicit error reports. Built-in paid procurement and gateway installation currently support the RPC adapter.
+**Implementation status (2026-11-07):** S0–S3 and S4 packaging are implemented in separate commits. `@neverdown/core` and `@neverdown/sdk` build and pack as Node packages; an external consumer installed both tarballs and passed a live read-only ENS → Arkiv → capability check. A later `NeverDown.procure` acceptance settled a Hedera testnet payment and installed the RPC standby; see [live evidence](./LIVE-EVIDENCE.md). The packages are **not published to npm**. The SDK also includes an in-process failure spot monitor for dApp probes and explicit error reports. Built-in paid procurement and gateway installation currently support the RPC adapter.
 
 Audience and runtime (locked):
 
