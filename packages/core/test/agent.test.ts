@@ -1,8 +1,18 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createHermeticToolBelt, createLiveToolBelt, runAgentScenario } from "../src/agent/index.js";
+import { selectAllowlistedOffers } from "../src/agent/tools.js";
 
 describe("C8 supreme agent (hermetic)", () => {
+  it("filters stale sellers before choosing the cheapest allowed live offer", () => {
+    const offers = [
+      { sellerens: "old.eth", pricetinybars: 10000n },
+      { sellerens: "NeverDownSeller.eth", pricetinybars: 10000n },
+      { sellerens: "neverdownseller.eth", pricetinybars: 9000n },
+    ];
+    assert.deepEqual(selectAllowlistedOffers(offers, "neverdownseller.eth"), [offers[2], offers[1]]);
+    assert.deepEqual(selectAllowlistedOffers(offers, ""), []);
+  });
   it("live seller resolution fails closed without an ENS allowlist", async () => {
     const tools = createLiveToolBelt({ ENS_RPC_URL: "https://example.com", ENS_ALLOWLIST_NAMES: "", POLICY_DB_PATH: ":memory:" });
     await assert.rejects(tools.resolve_seller({ ensName: "unknown.eth", expectedPayTo: "0.0.1" }), /ENS_ALLOWLIST_NAMES/);

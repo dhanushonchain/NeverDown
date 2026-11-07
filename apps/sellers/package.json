@@ -5,7 +5,7 @@
   "description": "NeverDown x402 RPC merchant (C1)",
   "type": "module",
   "scripts": {
-    "dev": "node --env-file-if-exists=../../.env --import tsx src/server.ts",
+    "dev": "node ../../scripts/run-with-env.mjs seller src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc -p tsconfig.build.json",
     "test": "node --import tsx --test \"test/**/*.test.ts\"",
@@ -17,11 +17,13 @@
     "@x402/express": "2.30.0",
     "@x402/hedera": "2.30.0",
     "@x402/paywall": "2.30.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.15.0",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0"
   }

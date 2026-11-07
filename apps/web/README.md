@@ -6,13 +6,10 @@ The current console is served as static HTML by `src/server.ts`; it has TypeScri
 
 To use the TSX component in this app, first set up a React frontend (for example Next.js with TypeScript and Tailwind), then run `pnpm dlx shadcn@latest init` in that frontend. Choose `components/ui` as the UI component path and configure the `@/components` alias in its TypeScript config. Keep this folder as the default location so shadcn-generated components and imports such as `@/components/ui/curtain-theme-toggle` resolve consistently. Install `react`, `react-dom`, `@types/react`, and `@types/react-dom` if the frontend setup does not supply them. The component itself needs no icon or image package; it includes SVG icons and uses no image assets.
 
-NeverDown **console** + five-act demo UI.
+NeverDown landing page and five-act console.
 
-| Chunk | Role |
-|---|---|
-| **C0** | Scaffold only (current) |
-| **C9** | Resilience Contract panel, status, timeline, evidence links |
+The current frontend is static HTML served by a TypeScript Node.js server. The homepage is `public/index.html`; the console is `public/console.html`. The production build emits the server under `dist/apps/web/src/server.js`; run it from this package with `npm start` or from the repository root with `npm start`.
 
-Do not start C9 until C8 agent demo works from CLI.
+The server exposes incident/evidence endpoints and local operator endpoints. The hosted Vercel output is intentionally a static preview; live operations require the local backend services.
 
-Full steps: [docs/BUILD-CHUNKS.md](../../docs/BUILD-CHUNKS.md#c9--console-ui-five-act-demo).
+For setup and commands, see [Local development](../../docs/LOCAL-DEVELOPMENT.md).

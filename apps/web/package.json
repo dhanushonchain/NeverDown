@@ -4,17 +4,20 @@
   "version": "0.0.0",
   "description": "NeverDown console + five-act demo UI (C9)",
   "scripts": {
-    "dev": "node --env-file-if-exists=../../.env.agent --import tsx src/server.ts",
-    "build": "echo \"@neverdown/web: static TypeScript server (C9)\"",
-    "lint": "echo \"ok\"",
-    "typecheck": "tsc -p tsconfig.json"
+    "dev": "node ../../scripts/run-with-env.mjs web src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "node ../../scripts/lint-static.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/apps/web/src/server.js",
+    "test": "node --import tsx --test test/*.test.ts"
   },
   "dependencies": {
-    "@neverdown/core": "workspace:*"
+    "@neverdown/core": "0.0.0"
   },
   "devDependencies": {
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "@types/node": "^22.15.0"
-  }
+  },
+  "type": "module"
 }

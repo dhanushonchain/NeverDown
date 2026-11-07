@@ -72,6 +72,20 @@ describe("C1 x402 RPC seller", () => {
     assert.ok(res.headers.get("payment-required"), "PAYMENT-REQUIRED header must be present");
   });
 
+  it("quotes the public HTTPS resource URL behind a trusted Heroku proxy", async () => {
+    const proxy = await listen(createApp({ config: testConfig({ trustProxy: true }), facilitatorClient: fakeFacilitator() }));
+    try {
+      const res = await fetch(`${proxy.baseUrl}/rpc-pack`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-forwarded-proto": "https" },
+        body: "{}",
+      });
+      assert.equal(res.status, 402);
+      const challenge = decodePaymentRequired(res.headers.get("payment-required")!) as { resource: { url: string } };
+      assert.equal(challenge.resource.url, proxy.baseUrl.replace("http:", "https:") + "/rpc-pack");
+    } finally { await proxy.close(); }
+  });
+
   it("serves only bounded public capability probes without payment", async () => {
     const app = createApp({ config: testConfig(), facilitatorClient: fakeFacilitator() });
     const probe = await listen(app);
@@ -125,6 +139,31 @@ describe("C1 x402 RPC seller", () => {
       const exhausted = await fetch(`${srv.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify(VALID_RPC) });
       assert.equal(exhausted.status, 401);
     } finally { await srv.close(); }
+  });
+
+  it("keeps a settled pack usable after a seller restart with PostgreSQL", async (t) => {
+    const databaseUrl = process.env.TEST_POSTGRES_URL;
+    if (!databaseUrl) { t.skip("set TEST_POSTGRES_URL to run the PostgreSQL integration test"); return; }
+    const facilitator = fakeFacilitator();
+    facilitator.verify = async () => ({ isValid: true, payer: "0.0.1111" });
+    facilitator.settle = async () => ({ success: true, transaction: "0.0.1111@1700000000.000000001", network: "hedera:testnet" });
+    const config = testConfig({ databaseUrl });
+    const first = await listen(createApp({ config, facilitatorClient: facilitator }));
+    let token: string;
+    try {
+      const unpaid = await fetch(`${first.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      assert.equal(unpaid.status, 402);
+      const challenge = decodePaymentRequired(unpaid.headers.get("payment-required")!) as { resource: unknown; accepts: unknown[] };
+      const signature = Buffer.from(JSON.stringify({ x402Version: 2, resource: challenge.resource, accepted: challenge.accepts[0], payload: { transaction: "AAAA" } })).toString("base64");
+      const paid = await fetch(`${first.baseUrl}/rpc-pack`, { method: "POST", headers: { "content-type": "application/json", "payment-signature": signature }, body: "{}" });
+      assert.equal(paid.status, 200);
+      token = (await paid.json() as { token: string }).token;
+    } finally { await first.close(); }
+    const restarted = await listen(createApp({ config, facilitatorClient: facilitator }));
+    try {
+      const rpc = await fetch(`${restarted.baseUrl}/rpc`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token!}` }, body: JSON.stringify(VALID_RPC) });
+      assert.equal(rpc.status, 200);
+    } finally { await restarted.close(); }
   });
 
   it("Test C: the decoded challenge advertises the configured Hedera testnet exact payment", async () => {

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, Shadow-Branch]
+  pull_request:
+    branches: [main, Shadow-Branch]
+
+permissions:
+  contents: read
+
+jobs:
+  pnpm:
+    name: pnpm validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm lint
+      - run: node scripts/build-vercel-static.mjs
+      - run: pnpm test
+      - run: pnpm test:web
+      - run: pnpm test:smoke
+      - run: pnpm test:local-demo
+
+  npm:
+    name: npm compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run lint
+      - run: node scripts/build-vercel-static.mjs
+      - run: npm test
+      - run: npm run test:local-demo

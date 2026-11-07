@@ -15,6 +15,8 @@ export class EntitlementStore {
     this.db.exec("CREATE TABLE IF NOT EXISTS entitlements (token_hash TEXT PRIMARY KEY, expires_at INTEGER NOT NULL, remaining INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 0)");
   }
 
+  health(): boolean { return true; }
+
   issuePending(requests: number, durationMs: number): string {
     if (!Number.isSafeInteger(requests) || requests < 1 || !Number.isSafeInteger(durationMs) || durationMs < 1) throw new Error("invalid entitlement limits");
     const token = randomBytes(32).toString("base64url");

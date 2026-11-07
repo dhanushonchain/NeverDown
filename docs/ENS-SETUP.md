@@ -40,11 +40,11 @@ ENS_RPC_URL=https://ethereum-rpc.publicnode.com
 ENS_ALLOWLIST_NAMES=neverdownseller.eth
 ```
 
-Then `pnpm env:bootstrap --force` so `.env.agent` / `.env.arkiv-seed` pick up the name.
+Set these values in the single root `.env`; the commands read it automatically.
 
 ## Local rehearsal overlay (not for judge evidence)
 
-If the owner key is unavailable during local rehearsal, `.env.agent` may set:
+If the owner key is unavailable during local rehearsal, root `.env` may set:
 
 ```env
 ENS_ALLOW_TEXT_OVERLAY=true

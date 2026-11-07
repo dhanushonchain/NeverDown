@@ -4,14 +4,14 @@ NeverDown's RPC adapter is the first failure spot. The backend is ready for a li
 
 ## Configure without exposing spend keys
 
-1. Copy `.env.agent.example` to an ignored `.env.agent` and fill in nonsecret settings. Copy `.env.seller.example` to `.env.seller` for the seller. Keep `HEDERA_SPEND_KEY`, `HEDERA_OPERATOR_KEY`, and `ARKIV_PRIVATE_KEY` out of both; `startPaymentWorker` refuses a parent process that carries those keys. Keep the Arkiv writer key in a separate local environment used only for seeding.
-2. Copy `.env.worker.example` to the ignored `PAYMENT_WORKER_ENV_FILE` (default `.env.worker`) and set mode `0600`. Give it the Hedera spend credentials, policy allowlist, price cap, approved seller base URL, persistent `POLICY_DB_PATH`, and HCS topic/operator values. Keep it outside Git.
+1. Copy `.env.example` to the ignored root `.env`, fill in all local settings, and run `chmod 600 .env`. Existing local profiles can be merged once with `pnpm env:bootstrap`. The launch scripts filter signing keys from agent, seller, gateway, and web processes; the payment worker reads the root file directly. `startPaymentWorker` still refuses a parent carrying signing keys.
+2. Set `PAYMENT_WORKER_ENV_FILE=.env`. Give the file Hedera spend credentials, policy allowlist, price cap, approved seller base URL, persistent `POLICY_DB_PATH`, and HCS topic/operator values. Keep it outside Git. The Arkiv writer key is passed only to `pnpm arkiv:seed`.
 3. Set `ENS_RPC_URL` to an Ethereum mainnet RPC, `SELLER_ENS_NAME`, and a nonempty `ENS_ALLOWLIST_NAMES`. The selected seller's `hederaAccount` must equal the offer's `payto`; its `x402Url` must equal the offer's `serviceurl`. Read-only `pnpm ens:check` must pass before seeding.
 4. Set `POC_REFERENCE_RPC` to an independent RPC on the expected chain. The seller must use `RPC_MODE=upstream` and point at a working upstream for that chain.
 5. Enable `GATEWAY_INTERNAL_API=true` and set a strong `GATEWAY_INTERNAL_TOKEN`. Configure primary and preapproved standby RPC URLs. Keep `INCIDENT_DB_PATH` and `POLICY_DB_PATH` persistent.
 6. Seed one v2 Arkiv offer using the real seller identity, URL, price, and chain ID. It must advertise `/probe`, `/rpc-pack`, and `/rpc` paths and have an unexpired app and protocol lifetime. Reseed after the schema v2 upgrade; old entities are not read by the new query.
 
-The `pnpm preflight:live` command uses `.env.agent` and checks local configuration, the matching Arkiv offer, ENS records, independent PoC, seller 402 terms, and gateway status without signing or paying. Run it before `agent:demo --live`. A failed preflight is a stop, not permission to relax policy.
+The `pnpm preflight:live` command reads the filtered root `.env` and checks local configuration, the matching Arkiv offer, ENS records, independent PoC, seller 402 terms, and gateway status without signing or paying. Run it before `pnpm agent:live`. A failed preflight is a stop, not permission to relax policy.
 
 ## Run
 
@@ -28,7 +28,7 @@ pnpm coordinator:live
 pnpm --filter @neverdown/web dev
 ```
 
-Use separate terminals for long-running services. Start the agent and coordinator with `.env.agent` through `agent:live` and `coordinator:live`; the older demo scripts load `.env`, which may contain signing keys and will be refused by the payment worker. The live agent command should settle one capped testnet purchase, install a standby only after receiving a valid pack credential, and print a redacted receipt with a transaction ID and HashScan URL. The coordinator then watches future gateway failovers and starts one procurement job per incident.
+Use separate terminals for long-running services. Each command reads the same root `.env` through the scoped launcher. The live agent command should settle one capped testnet purchase, install a standby only after receiving a valid pack credential, and print a redacted receipt with a transaction ID and HashScan URL. The coordinator then watches future gateway failovers and starts one procurement job per incident.
 
 ## Acceptance evidence
 
@@ -44,7 +44,7 @@ The C3 security gate remains **PARTIAL**: worker secrets and SQLite files are re
 
 ## Current local acceptance state (2026-11-06)
 
-Ignored `.env.agent`, `.env.seller`, `.env.worker`, and `.env.arkiv-seed` profiles are generated via `pnpm env:bootstrap`. Seller `/probe` and gateway `/ready` both answer Sepolia (`0xaa36a7`). `pnpm ens:check`, `pnpm arkiv:query` (v2 offer for `neverdown.eth`), and `pnpm preflight:live` passed. `pnpm agent:live` settled on Hedera testnet:
+The 2026-11-06 acceptance run used separate local env profiles, since consolidated into root `.env`. Seller `/probe` and gateway `/ready` both answered Sepolia (`0xaa36a7`). `pnpm ens:check`, `pnpm arkiv:query` (v2 offer for `neverdown.eth`), and `pnpm preflight:live` passed. `pnpm agent:live` settled on Hedera testnet:
 
 - Tx: `0.0.9185802@1793985063.486076384`
 - HashScan: https://hashscan.io/testnet/transaction/0.0.9185802%401793985063.486076384
@@ -52,3 +52,18 @@ Ignored `.env.agent`, `.env.seller`, `.env.worker`, and `.env.arkiv-seed` profil
 - Deny: `pnpm agent:deny-live` → `RECIPIENT_NOT_ALLOWLISTED` (no settle)
 
 ENS mainnet name `neverdown.eth` resolves; missing on-chain text records are filled for local rehearsal via `ENS_ALLOW_TEXT_OVERLAY` (see [ENS-SETUP.md](./ENS-SETUP.md)). Publish real `hederaAccount` / `x402Url` texts before treating ENS as prize-complete. Full ID table: [LIVE-EVIDENCE.md](./LIVE-EVIDENCE.md).
+
+
+## Repeatable manual test sequence
+
+See [LOCAL-DEVELOPMENT.md](./LOCAL-DEVELOPMENT.md) for exact terminal commands. Live testnet acceptance order:
+
+1. `pnpm ens:check` — read-only ENS identity validation.
+2. `pnpm arkiv:query` — read-only v2 capability offer discovery.
+3. Start the live seller and gateway processes.
+4. `pnpm preflight:live` — read-only chain, Arkiv, ENS, PoC, x402 challenge and gateway checks. Stop on failure.
+5. `pnpm agent:live` — bounded purchase and standby installation; this is the spend step.
+6. `pnpm agent:deny-live` — check policy denies the unallowlisted recipient without payment.
+7. Verify the fresh HashScan transaction, HCS Mirror Node record and gateway `/status`. Record new IDs for the current run.
+
+Never present a hermetic receipt as a live settlement. Reconcile an `UNCERTAIN` purchase before retrying.

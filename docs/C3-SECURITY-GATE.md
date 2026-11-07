@@ -44,7 +44,7 @@ Untrusted agent / parent process
   │  NO HEDERA_SPEND_KEY, NO private keys in messages
   ▼
 Payment worker (child process)
-  │  loads secrets from PAYMENT_WORKER_ENV_FILE (mode 0600)
+  │  loads secrets from root .env via PAYMENT_WORKER_ENV_FILE (mode 0600)
   │  authorize → reserve budget → sign/settle → HCS audit
   ▼
 POLICY_DB_PATH SQLite + Hedera
@@ -82,9 +82,9 @@ These are **accepted hackathon limits** unless a chunk explicitly hardens them.
 
 ### 1. Same-OS-user file access
 
-`POLICY_DB_PATH` SQLite and `PAYMENT_WORKER_ENV_FILE` are readable by any process running as the **same OS user** as the worker. If the agent host shares that user, it can open the DB or steal the cred file. There is **no** OS-user separation in this repo.
+`POLICY_DB_PATH` SQLite and the root `.env` credential file are readable by any process running as the **same OS user** as the worker. If the agent host shares that user, it can open the DB or steal the cred file. There is **no** OS-user separation in this repo.
 
-Mitigation today: `0600` on the worker env file; keep spend keys **only** in that file for live settle paths; never put `HEDERA_SPEND_KEY` in agent-visible env when using the worker.
+Mitigation today: `0600` on root `.env`; the scoped launcher keeps spend keys out of agent-visible env for live settle paths. This remains only process-environment isolation, because the agent runs under the same OS user and can read the file.
 
 ### 2. Replay detection is purchaseId-primary
 
@@ -92,7 +92,7 @@ Budget ledger uniqueness is keyed on `purchase_id`. Duplicate id → deny. Tampe
 
 ### 3. File-based worker secrets
 
-Secrets live on disk (`PAYMENT_WORKER_ENV_FILE`). Not a vault / KMS / OS keychain. Treat file permissions and machine access as the trust boundary.
+Secrets live on disk in root `.env` (`PAYMENT_WORKER_ENV_FILE`). Not a vault / KMS / OS keychain. Treat file permissions and machine access as the trust boundary.
 
 ### 4. Thin malformed-IPC coverage
 
@@ -119,7 +119,7 @@ See [`.env.example`](../.env.example).
 | Var | Role |
 |---|---|
 | `POLICY_DB_PATH` | SQLite ledger (reservations, auth records, HCS outbox) |
-| `PAYMENT_WORKER_ENV_FILE` | Worker-only secrets file; must be mode `0600` |
+| `PAYMENT_WORKER_ENV_FILE` | Root `.env` read by worker; must be mode `0600` |
 | `POLICY_ENDPOINTS` | Approved seller base URLs for worker purchases |
 | `POLICY_ALLOWLIST` | **Bare** Hedera account ids only (`0.0.123`), not `name:0.0.123` |
 | `HEDERA_SPEND_*` | Belong in worker env for live settle — not in LLM/agent prompts |

@@ -174,6 +174,13 @@ export function createHermeticToolBelt(opts?: {
 }
 
 /** Live-ish toolbelt: Arkiv/ENS/PoC/policy when env is filled; install hits gateway admin API. */
+export function selectAllowlistedOffers<T extends { sellerens: string; pricetinybars: bigint }>(offers: readonly T[], names: string): T[] {
+  const allowed = new Set(names.split(/[,\s;]+/).map((name) => name.trim().toLowerCase()).filter(Boolean));
+  return offers
+    .filter((offer) => allowed.has(offer.sellerens.toLowerCase()))
+    .sort((a, b) => (a.pricetinybars < b.pricetinybars ? -1 : a.pricetinybars > b.pricetinybars ? 1 : 0));
+}
+
 export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentToolBelt {
   const store = openBudgetStore(env.POLICY_DB_PATH?.trim() || ":memory:");
   const gatewayUrl = (env.GATEWAY_URL?.trim() || "http://localhost:8787").replace(/\/$/, "");
@@ -185,7 +192,7 @@ export function createLiveToolBelt(env: NodeJS.ProcessEnv = process.env): AgentT
         category: input.category,
         maxPriceTinybars: input.maxPriceTinybars,
       });
-      return [...rows].sort((a, b) => (a.pricetinybars < b.pricetinybars ? -1 : a.pricetinybars > b.pricetinybars ? 1 : 0));
+      return selectAllowlistedOffers(rows, env.ENS_ALLOWLIST_NAMES ?? "");
     },
     async resolve_seller({ ensName, expectedPayTo }) {
       const rpc = env.ENS_RPC_URL?.trim();

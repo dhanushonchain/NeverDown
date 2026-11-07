@@ -10,6 +10,8 @@ export interface SellerConfig {
   rpcMode: RpcMode;
   rpcUpstreamUrl: string | null;
   entitlementDbPath: string;
+  databaseUrl: string | null;
+  trustProxy: boolean;
 }
 
 export class ConfigError extends Error {
@@ -48,10 +50,10 @@ function parseHttpUrl(name: string, raw: string): string {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): SellerConfig {
-  const portRaw = env.SELLER_PORT?.trim() || "4001";
+  const portRaw = env.PORT?.trim() || env.SELLER_PORT?.trim() || "4001";
   const port = Number(portRaw);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new ConfigError("SELLER_PORT must be an integer between 1 and 65535");
+    throw new ConfigError("PORT or SELLER_PORT must be an integer between 1 and 65535");
   }
 
   const network = env.HEDERA_NETWORK?.trim() || "testnet";
@@ -89,6 +91,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): SellerConfig {
     rpcUpstreamUrl = parseHttpUrl("RPC_UPSTREAM_URL", requireValue(env, "RPC_UPSTREAM_URL"));
   }
 
+  const databaseUrl = env.DATABASE_URL?.trim() || null;
+  if (env.DYNO && !databaseUrl) throw new ConfigError("DATABASE_URL is required on Heroku; local SQLite is not durable there");
+  if (databaseUrl) {
+    try {
+      const parsed = new URL(databaseUrl);
+      if (!["postgres:", "postgresql:"].includes(parsed.protocol)) throw new Error("invalid protocol");
+    } catch { throw new ConfigError("DATABASE_URL must be a PostgreSQL URL"); }
+  }
+
   return {
     port,
     network: "hedera:testnet",
@@ -99,5 +110,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): SellerConfig {
     rpcMode,
     rpcUpstreamUrl,
     entitlementDbPath: env.SELLER_ENTITLEMENT_DB_PATH?.trim() || "neverdown-seller.sqlite",
+    databaseUrl,
+    trustProxy: Boolean(env.DYNO),
   };
 }
