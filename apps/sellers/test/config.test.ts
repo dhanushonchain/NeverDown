@@ -14,6 +14,7 @@ describe("loadConfig (Test F: configuration safety)", () => {
     assert.equal(cfg.facilitatorUrl, "https://x402.org/facilitator");
     assert.equal(cfg.rpcMode, "mock");
     assert.equal(cfg.rpcUpstreamUrl, null);
+    assert.equal(cfg.trustProxy, false);
   });
 
   it("fails when the merchant account is missing, without echoing other values", () => {
@@ -66,5 +67,13 @@ describe("loadConfig (Test F: configuration safety)", () => {
   it("rejects unknown RPC modes and out-of-range ports", () => {
     assert.throws(() => loadConfig({ ...base, RPC_MODE: "dynamic" }), ConfigError);
     assert.throws(() => loadConfig({ ...base, SELLER_PORT: "70000" }), ConfigError);
+  });
+
+  it("uses the platform port and requires durable storage on a dyno", () => {
+    assert.equal(loadConfig({ ...base, PORT: "3456", SELLER_PORT: "4001" }).port, 3456);
+    assert.throws(() => loadConfig({ ...base, DYNO: "web.1" }), /DATABASE_URL/);
+    const cfg = loadConfig({ ...base, DYNO: "web.1", DATABASE_URL: "postgres://user:pass@localhost:5432/neverdown" });
+    assert.equal(cfg.databaseUrl, "postgres://user:pass@localhost:5432/neverdown");
+    assert.equal(cfg.trustProxy, true);
   });
 });

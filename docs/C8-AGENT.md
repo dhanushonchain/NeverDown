@@ -27,7 +27,7 @@ pnpm agent:demo --scenario procure --live
 pnpm coordinator:dev  # watches gateway failovers and starts live procurement
 ```
 
-For live procurement, set `PAYMENT_WORKER_ENV_FILE` to a `0600` file containing the worker's Hedera spend credentials and policy configuration. Keep `HEDERA_SPEND_KEY` out of the parent `.env`. Seed v2 Arkiv offers with `probeurl`, `purchaseurl`, and `rpcurl`; configure `ENS_ALLOWLIST_NAMES`, `ENS_RPC_URL`, and the gateway internal API token. The seller and gateway must be running. Hermetic tests verify this flow without a Hedera transaction; live acceptance is still required before claiming the backend is complete.
+For live procurement, keep the root `.env` at mode `0600` and set `PAYMENT_WORKER_ENV_FILE=.env`. The launch scripts filter signing keys from the agent's process environment; the worker reads them directly from the file. Seed v2 Arkiv offers with `probeurl`, `purchaseurl`, and `rpcurl`; configure `ENS_ALLOWLIST_NAMES`, `ENS_RPC_URL`, and the gateway internal API token. The seller and gateway must be running. Hermetic tests verify this flow without a Hedera transaction; live acceptance is still required before claiming the backend is complete.
 
 The coordinator stores incident claims and receipts at `INCIDENT_DB_PATH` (default `neverdown-incidents.sqlite`). Discovery failures before any purchase retry after 30 seconds, up to three attempts. A `STARTED` incident left by a crash or an `UNCERTAIN` payment is never retried automatically; inspect the worker ledger and Hedera evidence before any manual retry. The gateway keeps serving its current route if the coordinator is stopped.
 

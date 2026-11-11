@@ -433,7 +433,7 @@ Local demo: complete acts 1–5 in under 90 seconds without opening a terminal.
 
 ### Done when
 
-- [x] Five-act path works on a clean machine with `.env` / `.env.agent`  
+- [x] Five-act path works on a clean machine with root `.env`
 - [x] Commit: `feat(web): C9 neverdown console five-act demo`  
 
 ---

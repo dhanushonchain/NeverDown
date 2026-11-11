@@ -4,6 +4,7 @@ dist/
 .turbo/
 .vercel/
 .env
+.env.tmp-*
 .env.local
 *.log
 .DS_Store
@@ -20,3 +21,6 @@ ENS_OWNER_PRIVATE_KEY
 *.db-wal
 *.db-shm
 dist-vercel/
+
+# Mock-only local demo profile
+.env.demo.local

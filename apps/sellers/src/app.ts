@@ -1,5 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import { EntitlementStore } from "./entitlement.js";
+import { PostgresEntitlementStore } from "./postgresEntitlement.js";
 import { HTTPFacilitatorClient, x402ResourceServer, type FacilitatorClient } from "@x402/core/server";
 import { ExactHederaScheme } from "@x402/hedera/exact/server";
 import { paymentMiddleware } from "@x402/express";
@@ -31,7 +32,9 @@ function rpcError(id: JsonRpcId, code: number, message: string) {
 
 export function createApp(opts: AppOptions): express.Express {
   const { config } = opts;
-  const entitlements = new EntitlementStore(config.entitlementDbPath);
+  const entitlements = config.databaseUrl
+    ? new PostgresEntitlementStore(config.databaseUrl)
+    : new EntitlementStore(config.entitlementDbPath);
   const facilitator = opts.facilitatorClient ?? new HTTPFacilitatorClient({ url: config.facilitatorUrl });
 
   const resourceServer = new x402ResourceServer(facilitator).register(
@@ -45,7 +48,7 @@ export function createApp(opts: AppOptions): express.Express {
     if (!body) throw new Error("missing pack response");
     const token = (JSON.parse(body.toString("utf8")) as { token?: unknown }).token;
     if (typeof token !== "string") throw new Error("missing pack token");
-    entitlements.activate(token);
+    await entitlements.activate(token);
   });
 
   const routes = {
@@ -77,10 +80,16 @@ export function createApp(opts: AppOptions): express.Express {
 
   const app = express();
   app.disable("x-powered-by");
+  // Heroku terminates HTTPS at its router; x402 derives the resource URL from req.protocol.
+  if (config.trustProxy) app.set("trust proxy", 1);
   let probeWindowStart = Date.now();
   let probeCount = 0;
 
-  app.get("/health", (_req: Request, res: Response) => {
+  app.get("/health", async (_req: Request, res: Response) => {
+    if (!await entitlements.health()) {
+      res.status(503).json({ status: "unavailable", service: "neverdown-rpc-seller" });
+      return;
+    }
     res.json({ status: "ok", service: "neverdown-rpc-seller", network: config.network });
   });
 
@@ -115,8 +124,8 @@ export function createApp(opts: AppOptions): express.Express {
     res.json({ jsonrpc: "2.0", id: rpc.id, result: outcome.result });
   });
 
-  app.post("/rpc-pack", express.json({ limit: "1kb" }), paymentMiddleware(routes, resourceServer, undefined, undefined, opts.syncFacilitatorOnStart ?? true), (_req: Request, res: Response) => {
-    const token = entitlements.issuePending(PACK_REQUESTS, PACK_DURATION_MS);
+  app.post("/rpc-pack", express.json({ limit: "1kb" }), paymentMiddleware(routes, resourceServer, undefined, undefined, opts.syncFacilitatorOnStart ?? true), async (_req: Request, res: Response) => {
+    const token = await entitlements.issuePending(PACK_REQUESTS, PACK_DURATION_MS);
     res.setHeader("Cache-Control", "private, no-store");
     res.json({ token, expiresInSeconds: PACK_DURATION_MS / 1000, maxRequests: PACK_REQUESTS });
   });
@@ -150,11 +159,11 @@ export function createApp(opts: AppOptions): express.Express {
       res.locals.rpc = result.request;
       next();
     },
-    (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
       const authorization = req.header("authorization");
       if (!authorization) { next(); return; }
       const match = /^Bearer ([A-Za-z0-9_-]{32,128})$/.exec(authorization);
-      if (!match || !entitlements.consume(match[1]!)) {
+      if (!match || !await entitlements.consume(match[1]!)) {
         res.status(401).json(rpcError((res.locals.rpc as JsonRpcRequest).id, -32001, "Invalid or exhausted entitlement"));
         return;
       }

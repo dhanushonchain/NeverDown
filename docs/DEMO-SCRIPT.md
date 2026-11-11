@@ -4,7 +4,7 @@ Product framing: **programmable resilience operator**. RPC is the hackathon demo
 
 ## 90-second click path (local console)
 
-1. `pnpm seller:live` · `pnpm gateway:live` · `pnpm web:dev` (separate terminals; use `.env.agent` / `.env.seller`).
+1. `pnpm seller:live` · `pnpm gateway:live` · `pnpm web:dev` (separate terminals; all read root `.env`).
 2. Open `http://localhost:3000`.
 3. **Act 1 — Contract:** show allowlist / budget; click denial test.
 4. **Act 2 — Status:** refresh gateway; show primary + standby healthy.
