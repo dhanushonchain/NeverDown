@@ -17,6 +17,7 @@
     "arkiv:seed": "node scripts/run-with-env.mjs arkiv-seed scripts/seed-arkiv.ts",
     "arkiv:query": "node scripts/run-with-env.mjs agent scripts/query-arkiv.ts",
     "ens:check": "node scripts/run-with-env.mjs agent scripts/check-ens.ts",
+    "sdk:pack": "node scripts/sdk-pack.mjs",
     "sdk:smoke": "node scripts/run-with-env.mjs agent scripts/sdk-smoke.mts",
     "sdk:live": "node scripts/run-with-env.mjs agent scripts/sdk-live-acceptance.mts",
     "failover:live": "node scripts/run-with-env.mjs agent scripts/live-failover-acceptance.mts",

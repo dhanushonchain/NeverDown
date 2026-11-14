@@ -9,6 +9,7 @@ import {
   type DiscoverOffersInput,
   type ProofOfCapabilityInput,
 } from "@neverdown/core";
+import { assertNeverDownHostEnv } from "./env.js";
 
 type ReadPorts = {
   resolve: typeof resolveAndValidateEnsSeller;
@@ -32,8 +33,6 @@ export type ProcureReceipt = {
   installError?: string;
 };
 
-const forbidden = ["HEDERA_SPEND_KEY", "HEDERA_OPERATOR_KEY", "ARKIV_PRIVATE_KEY", "RECLAIM_PRIVATE_KEY"];
-
 export class NeverDown {
   private readonly env: NodeJS.ProcessEnv;
   private readonly allowlist: string[];
@@ -43,28 +42,10 @@ export class NeverDown {
     discover: discoverOffers,
     prove: proofOfCapability,
   }) {
-    const input = options.env ?? process.env;
-    for (const key of forbidden) {
-      if (Object.prototype.hasOwnProperty.call(input, key)) throw new Error(`${key} must stay in the payment worker env file`);
-    }
-    const rpc = input.ENS_RPC_URL?.trim();
-    if (!rpc) throw new Error("ENS_RPC_URL is required");
-    const rpcUrl = new URL(rpc);
-    if (rpcUrl.protocol !== "https:") throw new Error("ENS_RPC_URL must use HTTPS");
-    this.allowlist = (input.ENS_ALLOWLIST_NAMES ?? "").split(/[,\s;]+/).map((name) => name.trim().toLowerCase()).filter(Boolean);
-    if (this.allowlist.length === 0) throw new Error("ENS_ALLOWLIST_NAMES is required");
+    const checked = assertNeverDownHostEnv(options.env ?? process.env);
+    this.allowlist = checked.allowlist;
     // Copy only read-side settings; never retain an arbitrary caller environment.
-    this.env = {
-      ENS_RPC_URL: rpc,
-      ENS_ALLOWLIST_NAMES: this.allowlist.join(","),
-      POC_REFERENCE_RPC: input.POC_REFERENCE_RPC?.trim(),
-      ARKIV_ACCESS_KEY: input.ARKIV_ACCESS_KEY?.trim(),
-      ARKIV_CHAIN_ID: input.ARKIV_CHAIN_ID?.trim(),
-      ARKIV_RPC: input.ARKIV_RPC?.trim(),
-      PAYMENT_WORKER_ENV_FILE: input.PAYMENT_WORKER_ENV_FILE?.trim(),
-      GATEWAY_URL: input.GATEWAY_URL?.trim(),
-      GATEWAY_INTERNAL_TOKEN: input.GATEWAY_INTERNAL_TOKEN?.trim(),
-    };
+    this.env = { ...checked.hostEnv };
   }
 
   static create(options: NeverDownOptions = {}): NeverDown { return new NeverDown(options); }

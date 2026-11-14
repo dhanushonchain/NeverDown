@@ -3,6 +3,8 @@
 **Separate application** that depends only on [`@neverdown/sdk`](../../packages/sdk).  
 It is **not** the NeverDown product console (`apps/web`).
 
+**First-time install / 10-minute path:** use [`../minimal-sdk-app`](../minimal-sdk-app) and [docs/SDK-QUICKSTART.md](../../docs/SDK-QUICKSTART.md) (`pnpm sdk:pack`). This consumer is the richer monorepo demo UI.
+
 ## Demo UI — without SDK, then with SDK
 
 ```bash

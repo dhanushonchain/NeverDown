@@ -70,6 +70,13 @@ it("procures through a real compiled worker and denies a mismatched recipient wi
     assert.equal(paidRequests, 1);
   } finally {
     server.close();
-    rmSync(dir, { recursive: true, force: true });
+    try {
+      rmSync(dir, { recursive: true, force: true });
+    } catch (error) {
+      // Windows can keep a brief lock on SQLite temp dirs after the worker exits.
+      if ((error as NodeJS.ErrnoException).code !== "EPERM" && (error as NodeJS.ErrnoException).code !== "EBUSY") {
+        throw error;
+      }
+    }
   }
 });
