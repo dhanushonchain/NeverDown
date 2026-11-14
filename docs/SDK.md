@@ -1,6 +1,6 @@
 # NeverDown SDK — phased plan
 
-**Implementation status (2026-11-07):** S0–S3 and S4 packaging are implemented in separate commits. `@neverdown/core` and `@neverdown/sdk` build and pack as Node packages; an external consumer installed both tarballs and passed a live read-only ENS → Arkiv → capability check. A later `NeverDown.procure` acceptance settled a Hedera testnet payment and installed the RPC standby; see [live evidence](./LIVE-EVIDENCE.md). The packages are **not published to npm**. The SDK also includes an in-process failure spot monitor for dApp probes and explicit error reports. Built-in paid procurement and gateway installation currently support the RPC adapter.
+**Implementation status (2026-11-14):** S0–S4 are implemented. Integrators: **[SDK-QUICKSTART.md](./SDK-QUICKSTART.md)** + `pnpm sdk:pack` + [examples/minimal-sdk-app](../examples/minimal-sdk-app). `@neverdown/core` and `@neverdown/sdk` build and pack as Node packages; a later `NeverDown.procure` acceptance settled Hedera testnet and installed an RPC standby — see [live evidence](./LIVE-EVIDENCE.md). The packages are **not published to npm yet** (use `pnpm sdk:pack`). Built-in paid procurement supports the RPC adapter; `FailureSpotMonitor` covers generic probes via callbacks.
 
 Audience and runtime (locked):
 
@@ -61,7 +61,7 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 - [x] Package installs in the monorepo
 - [x] No banned symbols reachable from `@neverdown/sdk` (mirror/extend `security.test.ts`)
-- [ ] Commit message: `feat(sdk): S0 safe re-export package`
+- [x] Commit message: `feat(sdk): S0 safe re-export package`
 
 ---
 
@@ -78,7 +78,7 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 - [x] Unit tests pass
 - [x] Live smoke documented; external tarball consumer passed the live read-only flow
-- [ ] Commit: `feat(sdk): S1 read-only NeverDown client`
+- [x] Commit: `feat(sdk): S1 read-only NeverDown client`
 
 ---
 
@@ -94,7 +94,7 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 
 - [x] Hermetic IPC settle + deny tests pass, including an SDK test through a real compiled worker
 - [x] `pnpm --filter @neverdown/core test` still green
-- [ ] Commit: `feat(sdk): S2 procure through payment worker`
+- [x] Commit: `feat(sdk): S2 procure through payment worker`
 
 ---
 
@@ -108,7 +108,7 @@ Browser code may later use a **status-only** entry (S3). It must never receive s
 **Gate**
 
 - [x] Console imports `@neverdown/sdk/status` for gateway status
-- [ ] Commit: `feat(sdk): S3 status helpers for console`
+- [x] Commit: `feat(sdk): S3 status helpers for console`
 
 ---
 

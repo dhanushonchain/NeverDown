@@ -34,6 +34,7 @@ It is **general dependency resilience**: you attach NeverDown to a failure class
 | **[docs/C7-POC.md](docs/C7-POC.md)** | C7 Proof-of-Capability before install |
 | **[docs/C8-AGENT.md](docs/C8-AGENT.md)** | C8 Supreme Agent procure / deny CLI |
 | **[docs/neverdown-architecture.md](docs/neverdown-architecture.md)** | Planes, components, flows, security honesty |
+| **[docs/SDK-QUICKSTART.md](docs/SDK-QUICKSTART.md)** | **Integrators** — pack tarballs, 10-minute read-only path, optional procure |
 | **[docs/SDK.md](docs/SDK.md)** | Implemented `@neverdown/sdk` phases and package status |
 | **[docs/neverdown-architecture.excalidraw](docs/neverdown-architecture.excalidraw)** | Editable architecture diagram |
 
@@ -253,6 +254,7 @@ Fill `.env` before C1/C2 (Hedera, facilitator, later Arkiv/ENS), then run `chmod
 | C7 Proof-of-Capability | **Done** — `pnpm poc:smoke` ([docs/C7-POC.md](docs/C7-POC.md)) |
 | C8 Supreme Agent | **Done** — `pnpm agent:demo --scenario procure\|deny` ([docs/C8-AGENT.md](docs/C8-AGENT.md)) |
 | C9 Console UI | **Done** — five-act console (`pnpm web:dev`) + evidence API |
+| SDK integrator door | **Ready** — `pnpm sdk:pack` · [docs/SDK-QUICKSTART.md](docs/SDK-QUICKSTART.md) · [examples/minimal-sdk-app](examples/minimal-sdk-app) |
 | Live acceptance | **Passed** — see [docs/LIVE-EVIDENCE.md](docs/LIVE-EVIDENCE.md) |
 | C10 Judge pack | **Baseline ready** — Arkiv md + demo/video checklists; tag `v0.1.0-demo` |
 | Git remote | `https://github.com/dhanushonchain/NeverDown.git` |

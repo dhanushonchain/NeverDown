@@ -1,0 +1,8 @@
+NeverDown SDK tarball install
+
+npm install ./neverdown-core-0.1.0.tgz ./neverdown-sdk-0.1.0.tgz
+# or
+pnpm add ./neverdown-core-0.1.0.tgz ./neverdown-sdk-0.1.0.tgz
+
+Node.js >= 22.13.0 required.
+See docs/SDK-QUICKSTART.md and examples/minimal-sdk-app/README.md

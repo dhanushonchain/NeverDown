@@ -21,3 +21,7 @@ ENS_OWNER_PRIVATE_KEY
 *.db-wal
 *.db-shm
 dist-vercel/
+dist/sdk-packs/
+examples/minimal-sdk-app/packs/*.tgz
+examples/minimal-sdk-app/pnpm-lock.yaml
+examples/neverdown-sdk-consumer/*.tgz

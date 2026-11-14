@@ -1,0 +1,24 @@
+{
+  "name": "neverdown-minimal-sdk-app",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Minimal stranger-facing integrator example for @neverdown/sdk (tarball install)",
+  "type": "module",
+  "scripts": {
+    "smoke": "node --import tsx src/smoke.ts",
+    "procure": "node --import tsx src/procure.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@neverdown/core": "file:./packs/neverdown-core-0.1.0.tgz",
+    "@neverdown/sdk": "file:./packs/neverdown-sdk-0.1.0.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}
